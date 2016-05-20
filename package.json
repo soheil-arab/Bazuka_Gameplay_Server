@@ -1,0 +1,28 @@
+{
+  "name": "game_play",
+  "version": "1.0.0",
+  "description": "Bazuka Gameplay Server By Hexino",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Soheil Arabzadeh",
+  "license": "ISC",
+  "dependencies": {
+    "http": "0.0.0",
+    "nanotimer": "^0.3.14",
+    "request": "^2.72.0",
+    "websocket": "^1.0.23",
+    "ws": "^1.1.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soheil-arab/Bazuka_Gameplay_Server.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/soheil-arab/Bazuka_Gameplay_Server/issues"
+  },
+  "homepage": "https://github.com/soheil-arab/Bazuka_Gameplay_Server#readme"
+}
