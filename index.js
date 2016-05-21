@@ -169,7 +169,7 @@ wsServer.on('request', function (request) {
                 default:
                     for (var i = 0 ; i < room.length ; i++) {
                         var uid = room[i];
-                        if (uid != srcUID || uid == undefined)
+                        if (uid == srcUID || uid == undefined)
                             continue;
                         try {
                             clients_connection[uid].sendBytes(message.binaryData, function (err) {
