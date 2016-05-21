@@ -68,7 +68,7 @@ wsServer.on('request', function (request) {
                 logger(chalkDate(new Date()) + ' ->\n\t' + chalkNotif('message utf8Data :') + chalkInMsg(message.utf8Data));
         }
         else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes\n :' + message.binaryData.toString('hex'));
+            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes :\n' + message.binaryData.toString('hex'));
             var dataBuffer = message.binaryData;
             var header = parseHeader(dataBuffer);
             var room = rooms[header.roomID];
@@ -77,6 +77,7 @@ wsServer.on('request', function (request) {
             console.log(header);
             switch (header.msgType) {
                 case 3:
+                    logger('match_state received :D');
                     var state_num = header.dataRes1;
                     if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
                         room_metadata[header.roomID]['match_state'][state_num] = message_object;
@@ -326,7 +327,7 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+//        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ' + Object.keys(clients_connection)));
