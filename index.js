@@ -88,6 +88,8 @@ wsServer.on('request', function (request) {
                             room_metadata[header.roomID]['last_state'];
                     }
                     else {
+                    	fs.writeFile('./state_1_'+state_num+'.bin',room_metadata[header.roomID]['match_state'][state_num]);
+                    	fs.writeFile('./state_2_'+state_num+'.bin',message_object);
                         logger(
                           chalkNotif('match state mismatch check --> ' + header.roomID + ' ' +
                             room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
