@@ -77,26 +77,6 @@ wsServer.on('request', function (request) {
             var message_object = dataBuffer.slice(24);
             console.log(header);
             switch (header.msgType) {
-                case 3:
-                    var state_num = header.dataRes1;
-                    logger('match_state received :D ' + state_num + ' from '+ srcUID);
-
-                    if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
-                        room_metadata[header.roomID]['match_state'][state_num] = message_object;
-                        room_metadata[header.roomID]['last_state'] =
-                          room_metadata[header.roomID]['last_state'] < state_num ?
-                            state_num :
-                            room_metadata[header.roomID]['last_state'];
-                    }
-                    else {
-                    	fs.writeFile('./state_1_'+state_num+'.bin',room_metadata[header.roomID]['match_state'][state_num]);
-                    	fs.writeFile('./state_2_'+state_num+'.bin',message_object);
-                        logger(
-                          chalkNotif('match state mismatch check --> ' + header.roomID + ' ' +
-                            room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
-                    }
-
-//                    break;
                 case 5:
                     var winnerID = message_object.readUInt32LE(0);
                     if (room_metadata[header.roomID]['state'] == 'play') {
@@ -171,6 +151,27 @@ wsServer.on('request', function (request) {
 
 
                     break;
+                case 3:
+                    var state_num = header.dataRes1;
+                    logger('match_state received :D ' + state_num + ' from '+ srcUID);
+
+                    if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
+                        room_metadata[header.roomID]['match_state'][state_num] = message_object;
+                        room_metadata[header.roomID]['last_state'] =
+                          room_metadata[header.roomID]['last_state'] < state_num ?
+                            state_num :
+                            room_metadata[header.roomID]['last_state'];
+                    }
+                    else {
+                    	fs.writeFile('./state_1_'+state_num+'.bin',room_metadata[header.roomID]['match_state'][state_num]);
+                    	fs.writeFile('./state_2_'+state_num+'.bin',message_object);
+                        logger(
+                          chalkNotif('match state mismatch check --> ' + header.roomID + ' ' +
+                            room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+                    }
+
+//                    break;
+
                 default:
                     for (var i = 0 ; i < room.length ; i++) {
                         var uid = room[i];
