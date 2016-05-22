@@ -77,8 +77,9 @@ wsServer.on('request', function (request) {
             console.log(header);
             switch (header.msgType) {
                 case 3:
-                    logger('match_state received :D');
                     var state_num = header.dataRes1;
+                    logger('match_state received :D ' + state_num + ' from '+ srcUID);
+
                     if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
                         room_metadata[header.roomID]['match_state'][state_num] = message_object;
                         room_metadata[header.roomID]['last_state'] =
@@ -328,7 +329,7 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        //setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ' + Object.keys(clients_connection)));
