@@ -37,7 +37,7 @@ var match_state_dict = {};
 var room_state_dict = {};
 var room_metadata = {};
 
-var turn_time = 45 * 1000;
+var turn_time = 1500 * 1000;
 
 var server = http.createServer(function (request, response) {
 });
@@ -172,6 +172,7 @@ wsServer.on('request', function (request) {
                         var uid = room[i];
                         if (uid == srcUID || uid == undefined)
                             continue;
+			logger('default uid --> ' + uid);
                         try {
                             clients_connection[uid].sendBytes(message.binaryData, function (err) {
                                 if (err) {
@@ -182,7 +183,7 @@ wsServer.on('request', function (request) {
                                 }
                             });
                         } catch (e) {
-                            logger(chalkError('message to ' + _uid + " received exception : " + e));
+                            logger(chalkError('message to ' + uid + " received exception : " + e));
                         }
                     }
                     break;
@@ -327,7 +328,7 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-//        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ' + Object.keys(clients_connection)));
@@ -366,11 +367,11 @@ function setTurnTimeout(metadata, roomID) {
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(roomID, 4);
     buf.writeUInt32LE(6, 8);
-    buf.writeUInt32LE(4, 12);
+    buf.writeUInt32LE(30, 12);
     buf.writeUInt32LE(0, 16);
     buf.writeUInt32LE(0, 20);
-
-    buf.writeUInt32LE(metadata['turn'], 24);
+    logger("turn --> " + metadata["turn"]);
+    buf.write(metadata['turn'].toString(), 24,30);
 
     for (var i = 0 ; i < room.length ; i++) {
         var uid = room[i];
