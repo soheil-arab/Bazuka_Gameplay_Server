@@ -96,7 +96,7 @@ wsServer.on('request', function (request) {
                             room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
                     }
 
-                    break;
+//                    break;
                 case 5:
                     var winnerID = message_object.readUInt32LE(0);
                     if (room_metadata[header.roomID]['state'] == 'play') {
