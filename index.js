@@ -90,7 +90,7 @@ wsServer.on('request', function (request) {
                     else {
                         logger(
                           chalkNotif('match state mismatch check --> ' + header.roomID + ' ' +
-                            room_metadata[header.roomID][state_num].compare(message_object)));
+                            room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
                     }
 
                     break;
