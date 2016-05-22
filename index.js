@@ -16,6 +16,7 @@ var http = require('http');
 var chalk = require('chalk');
 var url = require('url');
 var requestHTTP = require('request');
+var fs = require('fs');
 
 //var Chalk = {
 //
