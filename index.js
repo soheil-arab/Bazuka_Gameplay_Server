@@ -68,7 +68,7 @@ wsServer.on('request', function (request) {
                 logger(chalkDate(new Date()) + ' ->\n\t' + chalkNotif('message utf8Data :') + chalkInMsg(message.utf8Data));
         }
         else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes :\n' + message.binaryData.toString('hex'));
+            console.log('Received Binary Message of ' + message.binaryData.length /*+ ' bytes :\n' + message.binaryData.toString('hex')*/);
             var dataBuffer = message.binaryData;
             var header = parseHeader(dataBuffer);
             var room = rooms[header.roomID];
