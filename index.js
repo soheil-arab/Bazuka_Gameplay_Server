@@ -112,6 +112,7 @@ wsServer.on('request', function (request) {
                     var currentTurn = room_metadata[header.roomID]['users'][turn_idx];
                     logger('current turn : ' + currentTurn.toString());
                     if(currentTurn.toString() == turnID){
+                        room_metadata[header.roomID]['turn_count'] += 1;
                         clearTimeout(room_metadata[header.roomID]['timeout_obj']);
                         room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
@@ -164,10 +165,11 @@ wsServer.on('request', function (request) {
                           'http://alpha.hexino.ir/rest/update_match_result',
                           {
                               form: {
-                                  RoomID: header.roomID,
+                                  roomID: header.roomID,
                                   user1ID: room_metadata[header.roomID]['users'][0],
                                   user2ID: room_metadata[header.roomID]['users'][1],
-                                  winner: room[0] == winnerID ? 0 : 1
+                                  winner: room[0] == winnerID ? 0 : 1,
+                                  turn: room_metadata[header.roomID]['turn_count']
                               }
                           },
                           function (error, response, res_body) {
@@ -378,6 +380,7 @@ function acceptConnection(request) {
 
     if (currentRoom.length == 2 && room_metadata[requestData.RoomID]['state'] == 'wait') {
         room_metadata[requestData.RoomID]['match_state'] = {};
+        room_metadata[requestData.RoomID]['turn_count'] = 0;
         //var turn = currentRoom[0];
         var init_buf = makeInintData(currentRoom, requestData);
 
@@ -436,6 +439,7 @@ function setTurnTimeout(metadata, roomID) {
 
     }
     metadata['turn_index'] = 1 - metadata['turn_index'];
+    metadata['turn_count'] += 1;
     const buf = Buffer.allocUnsafe(6*4 + 4);
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(roomID, 4);
