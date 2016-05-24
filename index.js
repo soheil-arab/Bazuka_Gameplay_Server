@@ -162,7 +162,7 @@ wsServer.on('request', function (request) {
                         }
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                         requestHTTP.post(
-                          'http://alpha.hexino.ir/rest/update_match_result',
+                          'http://sl.hexino.ir/rest/update_match_result',
                           {
                               form: {
                                   roomID: header.roomID,
