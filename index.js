@@ -69,7 +69,7 @@ wsServer.on('request', function (request) {
                 logger(chalkDate(new Date()) + ' ->\n\t' + chalkNotif('message utf8Data :') + chalkInMsg(message.utf8Data));
         }
         else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length /*+ ' bytes :\n' + message.binaryData.toString('hex')*/);
+            logger('Received Binary Message of ' + message.binaryData.length /*+ ' bytes :\n' + message.binaryData.toString('hex')*/);
             var dataBuffer = message.binaryData;
             var header = parseHeader(dataBuffer);
             var room = rooms[header.roomID];
@@ -77,7 +77,7 @@ wsServer.on('request', function (request) {
             var message_object = dataBuffer.slice(24);
             console.log(header);
             switch (header.msgType) {
-            	                case 3:
+                case 3:
                     var state_num = header.dataRes1;
                     logger('match_state received :D ' + state_num + ' from '+ srcUID);
 
@@ -87,17 +87,65 @@ wsServer.on('request', function (request) {
                           room_metadata[header.roomID]['last_state'] < state_num ?
                             state_num :
                             room_metadata[header.roomID]['last_state'];
+                        room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+
                     }
                     else {
-                    	fs.writeFile('./state_1_'+state_num+'.bin',room_metadata[header.roomID]['match_state'][state_num]);
-                    	fs.writeFile('./state_2_'+state_num+'.bin',message_object);
                         logger(
-                          chalkNotif('match state mismatch check --> ' + header.roomID + ' ' +
+                          chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
                             room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+                        if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0){
+                            fs.appendFile(room_metadata[header.roomID]['log_file_err'],room_metadata[header.roomID]['match_state'][state_num],function(err){
+                                if(!err){
+                                    fs.appendFile(room_metadata[header.roomID]['log_file_err'],message_object);
+                                }
+                            });
+                        }
                     }
 
                     break;
+                case 6:
+                    var turnID = message_object.toString();
+                    logger('change turn struct data : ' + chalkInMsg(turnID));
+                    //if valid -->
+                    var turn_idx = room_metadata[header.roomID]['turn_index'];
+                    var currentTurn = room_metadata[header.roomID]['users'][turn_idx];
+                    logger('current turn : ' + currentTurn.toString());
+                    if(currentTurn.toString() == turnID){
+                        clearTimeout(room_metadata[header.roomID]['timeout_obj']);
+                        room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
+                        room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                        for (var i = 0 ; i < room.length ; i++) {
+                            var uid = room[i];
+                            if (uid == srcUID || uid == undefined)
+                                continue;
+                            try {
+                                clients_connection[uid].sendBytes(message.binaryData, function (err) {
+                                    if (err) {
+                                        logger('send byte error ' + chalkError(err));
+                                    }
+                                    else {
+                                        logger(chalkDate(new Date()) + ' ->\n\t' + chalkNotif('message sent to ') + uid);
+                                    }
+                                });
+                            } catch (e) {
+                                logger(chalkError('message to ' + uid + " received exception : " + e));
+                            }
+                        }
 
+                        room_metadata[header.roomID]['timeout_obj'] =
+                            setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], requestData.RoomID);
+
+                    }
+                    else{
+                        logger(chalkError('invalid change turn request'));
+                    }
+
+
+
+
+
+                    break;
                 case 5:
                     var winnerID = message_object.readUInt32LE(0);
                     if (room_metadata[header.roomID]['state'] == 'play') {
@@ -108,30 +156,33 @@ wsServer.on('request', function (request) {
                         room_metadata[header.roomID]['state'] = 'finish';
                         if (winnerID != room_metadata[header.roomID]['winner_1']) {
                             logger(chalkError("client cheats in finish state"));
+                            break;
+
                         }
+                        room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                         requestHTTP.post(
                           'http://alpha.hexino.ir/rest/update_match_result',
                           {
                               form: {
-                                  user1ID: room[0],
-                                  user2ID: room[1],
+                                  RoomID: header.roomID,
+                                  user1ID: room_metadata[header.roomID]['users'][0],
+                                  user2ID: room_metadata[header.roomID]['users'][1],
                                   winner: room[0] == winnerID ? 0 : 1
                               }
                           },
-                          function (error, response, body) {
+                          function (error, response, res_body) {
 
                               if (!error && response.statusCode == 200) {
-                                  var res_body = body.replace(/\\+/g, "").replace(/"{/g, '{').replace(/}"/g, '}');
-                                  logger(chalkNotif(res_body));
                                   var x = JSON.parse(res_body);
                                   var user1 = (x['user1']);
                                   var user2 = (x['user2']);
+                                  var _roomID = x['roomID'];
                                   for (var i = 0; i < room.length; i++) {
 
-                                      var _uid = room[i];
+                                      var _uid = room_metadata[_roomID]['users'][i];
                                       const buf = Buffer.allocUnsafe(36);
                                       buf.writeUInt32LE(_uid, 0);
-                                      buf.writeUInt32LE(header.roomID, 4);
+                                      buf.writeUInt32LE(_roomID, 4);
                                       buf.writeUInt32LE(127, 8);
                                       buf.writeUInt32LE(12, 12);
                                       buf.writeUInt32LE(0, 16);
@@ -140,27 +191,28 @@ wsServer.on('request', function (request) {
 
                                       if (_uid == user1['userID']) {
                                           buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
-                                          buf.writeUInt32LE(user1['trophy'], 28);
-                                          buf.writeUInt32LE(user1['added_trophy'], 32);
+                                          buf.writeUInt32LE(user1['trophy_sum'], 28);
+                                          buf.writeUInt32LE(user1['trophy_diff'], 32);
 
                                       } else if (_uid == user2['userID']) {
                                           buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
-                                          buf.writeUInt32LE(user1['trophy'], 28);
-                                          buf.writeUInt32LE(user1['added_trophy'], 32);
+                                          buf.writeUInt32LE(user2['trophy_sum'], 28);
+                                          buf.writeUInt32LE(user2['trophy_diff'], 32);
                                       }
-                                      logger(buf.toString('hex'));
 
                                       try {
-                                          clients[_uid].sendBytes(buf, function (err) {
+                                          clients_connection[_uid].sendBytes(buf, function (err) {
                                               if (err) {
-                                                  logger('match_res err ' + chalkError(err));
+                                                  logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
                                               } else {
-                                                  logger(chalkDate(new Date()) + ' ->\n\t' + chalkNotif('match_result sent to ') + _uid);
+
                                               }
                                           });
                                       } catch (e) {
                                           logger(chalkError('match_res exception message to ' + _uid + " exception : " + e));
                                       }
+                                      room_metadata[_roomID]['log_file_ws'].end();
+
                                   }
 
                               }
@@ -174,11 +226,11 @@ wsServer.on('request', function (request) {
                     break;
 
                 default:
+                    room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                     for (var i = 0 ; i < room.length ; i++) {
                         var uid = room[i];
                         if (uid == srcUID || uid == undefined)
                             continue;
-			logger('default uid --> ' + uid);
                         try {
                             clients_connection[uid].sendBytes(message.binaryData, function (err) {
                                 if (err) {
@@ -201,24 +253,25 @@ wsServer.on('request', function (request) {
         logger((new Date()) + ' -> \n\t' + chalkNotif("Connection ID: " + connection['userID'] + ' disconnected.'));
         var room = rooms[connection['roomID']];
         var user = connection['userID'];
+        var uid;
         clients_connection[user] = undefined;
-        for (var i = 0 ; i < room.length ; i++) {
-            var _uid = room[i];
-            if (_uid == user)
-                room.splice(i, 1);
+        for (var j = 0 ; j < room.length ; j++) {
+            uid = room[j];
+            if (uid == user)
+                room.splice(j, 1);
         }
-        for (var i = 0 ; i < room.length ; i++) {
-            var _uid = room[i];
-            //var dc_data = {
-            //    header: JSON.stringify({
-            //        msg_type: 'warning'
-            //    }),
-            //    msg_data: JSON.stringify({
-            //        warning_type: 'pair_disconnected'
-            //    })
-            //};
-            //clients_connection[_uid].sendUTF(JSON.stringify(dc_data));
-        }
+        //for (var i = 0 ; i < room.length ; i++) {
+        //    uid = room[i];
+        //    var dc_data = {
+        //        header: JSON.stringify({
+        //            msg_type: 'warning'
+        //        }),
+        //        msg_data: JSON.stringify({
+        //            warning_type: 'pair_disconnected'
+        //        })
+        //    };
+        //    clients_connection[_uid].sendUTF(JSON.stringify(dc_data));
+        //}
         //if (room.length == 0) {
         //    match_state_dict[connection['roomID']] = 'failed';
         //    rooms[connection['roomID']] = undefined;
@@ -287,12 +340,14 @@ function parseHeader(buf) {
  *  state, --> wait, play, 
  */
 function acceptConnection(request) {
+
     var requestData = {
         UserID: parseInt(request.resourceURL.query.userID, 10),
         RoomID: parseInt(request.resourceURL.query.roomID, 10),
         DeviceID: request.resourceURL.query.userID,
         Ticket: 1//TODO: from query string
     };
+
     var verification = verify_ticket(requestData.Ticket, requestData.RoomID, requestData.UserID); //TODO: verify ticket with symetric encryption
 
     if (requestData.UserID == undefined || requestData.RoomID == undefined ||
@@ -315,6 +370,7 @@ function acceptConnection(request) {
         room_metadata[requestData.RoomID] = {};
         room_metadata[requestData.RoomID]['state'] = 'wait';
     }
+
     if (rooms[requestData.RoomID].length < 2 && room_metadata[requestData.RoomID]['state'] == 'wait')
         rooms[requestData.RoomID].push(requestData.UserID);
 
@@ -334,14 +390,19 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        //setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
-        logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ' + Object.keys(clients_connection)));
+        room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_'+requestData.RoomID+'_'+new Date().toISOString()+'.log',
+          {flags:"w+",defaultEncoding:null,  autoClose: true});
+        room_metadata[requestData.RoomID]['log_file_err'] = './log/error/room_'+requestData.RoomID+'_'+new Date().toISOString()+'.log';
+
+        room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
+        logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ') + chalkInMsg(Object.keys(clients_connection)));
     }
     else if (currentRoom.length < 2 && room_state_dict[requestData.RoomID] == 'play') {
         //TODO:disconnected user connected again
-        var recon_buf = makeReconnectData(currentRoom, requestData);
+        var recon_buf = makeReconnectData(requestData);
         try {
             connection.sendBytes(recon_buf, function (err) {
                 if (err) {
@@ -361,14 +422,20 @@ function acceptConnection(request) {
 
 }
 
-
+/**
+ *
+ * @param metadata
+ * @param roomID
+ */
 function setTurnTimeout(metadata, roomID) {
+
     clearTimeout(metadata['timeout_obj']);
     //TODO: send change turn to users
     var room = rooms[roomID];
-    var index = room.indexOf(metadata['turn']);
-    metadata['turn'] = room[1 - index];
-    metadata['timeout_obj'] = setTimeout(setTurnTimeout, turn_time, metadata, roomID);
+    if(index == undefined || index == null){
+
+    }
+    metadata['turn_index'] = 1 - metadata['turn_index'];
     const buf = Buffer.allocUnsafe(6*4 + 4);
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(roomID, 4);
@@ -376,8 +443,10 @@ function setTurnTimeout(metadata, roomID) {
     buf.writeUInt32LE(30, 12);
     buf.writeUInt32LE(0, 16);
     buf.writeUInt32LE(0, 20);
-    logger("turn --> " + metadata["turn"]);
-    buf.write(metadata['turn'].toString(), 24,30);
+    var turn_idx = metadata['turn_index'];
+    logger("turn --> " + metadata["users"][turn_idx]);
+    buf.write(metadata['users'][turn_idx].toString(), 24,30);
+    metadata['timeout_obj'] = setTimeout(setTurnTimeout, turn_time, metadata, roomID);
 
     for (var i = 0 ; i < room.length ; i++) {
         var uid = room[i];
@@ -405,21 +474,22 @@ function makeInintData(currentRoom, requestData) {
     var turn = rooms[requestData.RoomID][turn_index];
     var userID1 = currentRoom[0];
     var userID2 = currentRoom[1];
-    var deck_order = [1, 2, 3, 4, 5, 6, 7, 8];
-    room_metadata[requestData.RoomID]['turn'] = turn;
+    var deck_order = [0, 1, 2, 3, 4, 5, 6, 7];
+    room_metadata[requestData.RoomID]['users'] = [currentRoom[0],currentRoom[1]];
+    room_metadata[requestData.RoomID]['turn_index'] = turn_index;
 
     var shuffled_order = shuffle(deck_order);
     const buf = Buffer.allocUnsafe(68);
     //    const buf = Buffer.allocUnsafe(68+60);
 
-
+    //header struct
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(requestData.RoomID, 4);
     buf.writeUInt32LE(0, 8);
     buf.writeUInt32LE(44, 12);
     buf.writeUInt32LE(0, 16);
     buf.writeUInt32LE(0, 20);
-
+    //init data
     buf.writeUInt32LE(userID1, 24);
     buf.writeUInt32LE(userID2, 28);
     buf.writeUInt32LE(turn, 32);
@@ -433,25 +503,27 @@ function makeInintData(currentRoom, requestData) {
 
 }
 
-function makeReconnectData(currentRoom, requestData) {
+function makeReconnectData( requestData) {
 
     var state_num = match_state_dict[requestData.RoomID]['last_state'];
-    var turn = room_metadata[requestData.RoomID]['turn'];
+    var turn_idx = room_metadata[requestData.RoomID] ['turn_index'];
+    var turn = room_metadata[requestData.RoomID] ['users'] [turn_idx];
 
     var buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
     const buf = Buffer.allocUnsafe(buf_size);
-
+    //header struct
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(requestData.RoomID, 4);
     buf.writeUInt32LE(128, 8);
     buf.writeUInt32LE(buf_size - 24, 12);
     buf.writeUInt32LE(0, 16);
     buf.writeUInt32LE(0, 20);
-
-    buf.writeUInt32LE(state_num, 24)
+    //reconnect data
+    buf.writeUInt32LE(state_num, 24);
     buf.writeUInt32LE(turn, 28);
     room_metadata[requestData.RoomID]['match_state'][state_num].copy(buf, 32);
 
     return buf;
 
 }
+
