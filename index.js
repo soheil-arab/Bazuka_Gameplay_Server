@@ -435,9 +435,6 @@ function setTurnTimeout(metadata, roomID) {
     clearTimeout(metadata['timeout_obj']);
     //TODO: send change turn to users
     var room = rooms[roomID];
-    if(index == undefined || index == null){
-
-    }
     metadata['turn_index'] = 1 - metadata['turn_index'];
     metadata['turn_count'] += 1;
     const buf = Buffer.allocUnsafe(6*4 + 4);
