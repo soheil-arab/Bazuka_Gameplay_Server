@@ -135,7 +135,7 @@ wsServer.on('request', function (request) {
                         }
 
                         room_metadata[header.roomID]['timeout_obj'] =
-                            setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], requestData.RoomID);
+                            setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
 
                     }
                     else{
