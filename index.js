@@ -148,7 +148,8 @@ wsServer.on('request', function (request) {
 
                     break;
                 case 5:
-                    var winnerID = srcUID;
+                    var winnerID = message_object.toString('utf8');
+                    console.log('winnerID : ' + winnerID);
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
                         room_metadata[header.roomID]['winner_1'] = winnerID;
