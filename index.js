@@ -148,7 +148,7 @@ wsServer.on('request', function (request) {
 
                     break;
                 case 5:
-                    var winnerID = message_object.readUInt32LE(0);
+                    var winnerID = srcUID;
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
                         room_metadata[header.roomID]['winner_1'] = winnerID;
