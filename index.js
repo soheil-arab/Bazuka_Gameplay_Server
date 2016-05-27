@@ -105,7 +105,7 @@ wsServer.on('request', function (request) {
 
                     break;
                 case 6:
-                    var turnID = message_object.toString();
+                    var turnID = bin2String(message_object);
                     logger('change turn struct data : ' + chalkInMsg(turnID));
                     //if valid -->
                     var turn_idx = room_metadata[header.roomID]['turn_index'];
@@ -528,3 +528,10 @@ function makeReconnectData( requestData) {
 
 }
 
+function bin2String(array) {
+  var result = "";
+  for (var i = 0; i < array.length; i++) {
+    result += String.fromCharCode(parseInt(array[i], 2));
+  }
+  return result;
+}
