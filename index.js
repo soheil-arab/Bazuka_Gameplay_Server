@@ -106,12 +106,12 @@ wsServer.on('request', function (request) {
                     break;
                 case 6:
                     var turnID = bin2String(message_object);
-                    logger('change turn struct data : ' + chalkInMsg(turnID));
+                    logger('change turn struct data : ' + chalkInMsg(srcUID));
                     //if valid -->
                     var turn_idx = room_metadata[header.roomID]['turn_index'];
                     var currentTurn = room_metadata[header.roomID]['users'][turn_idx];
                     logger('current turn : ' + currentTurn.toString());
-                    if(currentTurn.toString() == turnID){
+                    if(currentTurn == srcUID){
                         room_metadata[header.roomID]['turn_count'] += 1;
                         clearTimeout(room_metadata[header.roomID]['timeout_obj']);
                         room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
