@@ -169,7 +169,7 @@ wsServer.on('request', function (request) {
                                   roomID: header.roomID,
                                   user1ID: room_metadata[header.roomID]['users'][0],
                                   user2ID: room_metadata[header.roomID]['users'][1],
-                                  winner: room[0] == winnerID ? 0 : 1,
+                                  winner: room_metadata[header.roomID]['users'][0] == winnerID ? 0 : 1,
                                   turn: room_metadata[header.roomID]['turn_count']
                               }
                           },
