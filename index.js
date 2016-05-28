@@ -83,6 +83,7 @@ wsServer.on('request', function (request) {
                     logger('match_state received :D ' + state_num + ' from '+ srcUID);
 
                     if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
+			fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);
                         room_metadata[header.roomID]['match_state'][state_num] = message_object;
                         room_metadata[header.roomID]['last_state'] =
                           room_metadata[header.roomID]['last_state'] < state_num ?
@@ -92,7 +93,8 @@ wsServer.on('request', function (request) {
 
                     }
                     else {
-                        logger(
+                        fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);                                                                        
+	             logger(
                           chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
                             room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
                         if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0){
@@ -164,7 +166,7 @@ wsServer.on('request', function (request) {
                         }
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                         requestHTTP.post(
-                          'http://sl.hexino.ir/rest/update_match_result',
+                          'http://212.47.232.223/rest/update_match_result',
                           {
                               form: {
                                   roomID: header.roomID,
