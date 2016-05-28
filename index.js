@@ -34,7 +34,6 @@ var chalkDate = chalk.bgWhite.black;
 var clients_connection = {};
 var rooms = {};
 //var user_deck_dict = {};
-var match_state_dict = {};
 var room_metadata = {};
 var disconnect_rooms = {};
 
@@ -514,7 +513,7 @@ function makeInintData(currentRoom, requestData) {
 
 function makeReconnectData(requestData) {
 
-    var state_num = match_state_dict[requestData.RoomID]['last_state'];
+    var state_num = room_metadata[requestData.RoomID]['last_state'];
     var turn_idx = room_metadata[requestData.RoomID]['turn_index'];
     var turn = room_metadata[requestData.RoomID]['users'][turn_idx];
 
