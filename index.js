@@ -80,27 +80,28 @@ wsServer.on('request', function (request) {
             switch (header.msgType) {
                 case 3:
                     var state_num = header.dataRes1;
-                    logger('match_state received :D ' + state_num + ' from '+ srcUID);
+                    logger('match_state received :D ' + state_num + ' from ' + srcUID);
 
                     if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
-			fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);
+                        //fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);
                         room_metadata[header.roomID]['match_state'][state_num] = message_object;
                         room_metadata[header.roomID]['last_state'] =
                           room_metadata[header.roomID]['last_state'] < state_num ?
                             state_num :
                             room_metadata[header.roomID]['last_state'];
+                        logger(chalkInMsg("last state " + room_metadata[header.roomID]['last_state']));
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
 
                     }
                     else {
-                        fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);                                                                        
-	             logger(
-                          chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
-                            room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
-                        if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0){
-                            fs.appendFile(room_metadata[header.roomID]['log_file_err'],room_metadata[header.roomID]['match_state'][state_num],function(err){
-                                if(!err){
-                                    fs.appendFile(room_metadata[header.roomID]['log_file_err'],message_object);
+                        //fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);                                                                        
+                        logger(
+                                 chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
+                                   room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+                        if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0) {
+                            fs.appendFile(room_metadata[header.roomID]['log_file_err'], room_metadata[header.roomID]['match_state'][state_num], function (err) {
+                                if (!err) {
+                                    fs.appendFile(room_metadata[header.roomID]['log_file_err'], message_object);
                                 }
                             });
                         }
@@ -114,7 +115,7 @@ wsServer.on('request', function (request) {
                     var turn_idx = room_metadata[header.roomID]['turn_index'];
                     var currentTurn = room_metadata[header.roomID]['users'][turn_idx];
                     logger('current turn : ' + currentTurn.toString());
-                    if(currentTurn == srcUID){
+                    if (currentTurn == srcUID) {
                         room_metadata[header.roomID]['turn_count'] += 1;
                         clearTimeout(room_metadata[header.roomID]['timeout_obj']);
                         room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
@@ -141,7 +142,7 @@ wsServer.on('request', function (request) {
                             setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
 
                     }
-                    else{
+                    else {
                         logger(chalkError('invalid change turn request'));
                     }
 
@@ -403,9 +404,9 @@ function acceptConnection(request) {
         setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
-        room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_'+requestData.RoomID+'_'+new Date().toISOString()+'.log',
-          {flags:"w+",defaultEncoding:null,  autoClose: true});
-        room_metadata[requestData.RoomID]['log_file_err'] = './log/error/room_'+requestData.RoomID+'_'+new Date().toISOString()+'.log';
+        room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log',
+          { flags: "w+", defaultEncoding: null, autoClose: true });
+        room_metadata[requestData.RoomID]['log_file_err'] = './log/error/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log';
 
         room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ') + chalkInMsg(Object.keys(clients_connection)));
@@ -444,7 +445,7 @@ function setTurnTimeout(metadata, roomID) {
     var room = rooms[roomID];
     metadata['turn_index'] = 1 - metadata['turn_index'];
     metadata['turn_count'] += 1;
-    const buf = Buffer.allocUnsafe(6*4 + 32);
+    const buf = Buffer.allocUnsafe(6 * 4 + 32);
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(roomID, 4);
     buf.writeUInt32LE(6, 8);
@@ -453,7 +454,7 @@ function setTurnTimeout(metadata, roomID) {
     buf.writeUInt32LE(0, 20);
     var turn_idx = metadata['turn_index'];
     logger("turn --> " + metadata["users"][turn_idx]);
-    buf.write(metadata['users'][turn_idx].toString(), 24,30);
+    buf.write(metadata['users'][turn_idx].toString(), 24, 30);
     metadata['timeout_obj'] = setTimeout(setTurnTimeout, turn_time, metadata, roomID);
 
     for (var i = 0 ; i < room.length ; i++) {
@@ -483,7 +484,7 @@ function makeInintData(currentRoom, requestData) {
     var userID1 = currentRoom[0];
     var userID2 = currentRoom[1];
     var deck_order = [0, 1, 2, 3, 4, 5, 6, 7];
-    room_metadata[requestData.RoomID]['users'] = [currentRoom[0],currentRoom[1]];
+    room_metadata[requestData.RoomID]['users'] = [currentRoom[0], currentRoom[1]];
     room_metadata[requestData.RoomID]['turn_index'] = turn_index;
 
     var shuffled_order = shuffle(deck_order);
@@ -511,11 +512,11 @@ function makeInintData(currentRoom, requestData) {
 
 }
 
-function makeReconnectData( requestData) {
+function makeReconnectData(requestData) {
 
     var state_num = match_state_dict[requestData.RoomID]['last_state'];
-    var turn_idx = room_metadata[requestData.RoomID] ['turn_index'];
-    var turn = room_metadata[requestData.RoomID] ['users'] [turn_idx];
+    var turn_idx = room_metadata[requestData.RoomID]['turn_index'];
+    var turn = room_metadata[requestData.RoomID]['users'][turn_idx];
 
     var buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
     const buf = Buffer.allocUnsafe(buf_size);
@@ -536,11 +537,11 @@ function makeReconnectData( requestData) {
 }
 
 function bin2String(array) {
-  var result = "";
-  for (var i = 0; i < array.length; i++) {
-    result += String.fromCharCode(parseInt(array[i], 2));
-  }
-  return result;
+    var result = "";
+    for (var i = 0; i < array.length; i++) {
+        result += String.fromCharCode(parseInt(array[i], 2));
+    }
+    return result;
 }
 
 function close_empty_room(counter, roomID) {
@@ -550,6 +551,6 @@ function close_empty_room(counter, roomID) {
         room_metadata[roomID]["state"] = "force_close";
     }
     else {
-        setTimeout(close_empty_room, 10*1000, counter+1, roomID);
+        setTimeout(close_empty_room, 10 * 1000, counter + 1, roomID);
     }
 }
