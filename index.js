@@ -37,8 +37,9 @@ var rooms = {};
 var match_state_dict = {};
 var room_state_dict = {};
 var room_metadata = {};
+var disconnect_rooms = {};
 
-var turn_time = 1500 * 1000;
+var turn_time = 30 * 1000;
 
 var server = http.createServer(function (request, response) {
 });
@@ -263,6 +264,9 @@ wsServer.on('request', function (request) {
             if (uid == user)
                 room.splice(j, 1);
         }
+        if (room.length == 0) {
+            setTimeout(close_empty_room, 10*1000, 0, roomID);
+        }
         //for (var i = 0 ; i < room.length ; i++) {
         //    uid = room[i];
         //    var dc_data = {
@@ -438,7 +442,7 @@ function setTurnTimeout(metadata, roomID) {
     var room = rooms[roomID];
     metadata['turn_index'] = 1 - metadata['turn_index'];
     metadata['turn_count'] += 1;
-    const buf = Buffer.allocUnsafe(6*4 + 4);
+    const buf = Buffer.allocUnsafe(6*4 + 32);
     buf.writeUInt32LE(0, 0);
     buf.writeUInt32LE(roomID, 4);
     buf.writeUInt32LE(6, 8);
@@ -535,4 +539,15 @@ function bin2String(array) {
     result += String.fromCharCode(parseInt(array[i], 2));
   }
   return result;
+}
+
+function close_empty_room(counter, roomID) {
+    if (counter >= 3) {
+        clearTimeout(room_metadata[roomID]["timeout_obj"]);
+        delete rooms[roomID];
+        room_metadata[roomID]["state"] = "force_close";
+    }
+    else {
+        setTimeout(close_empty_room, 10*1000, counter+1, roomID);
+    }
 }

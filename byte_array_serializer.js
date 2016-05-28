@@ -1,4 +1,14 @@
-const buf = Buffer.alloc(64);
-buf.write('123', 0, 30);
-console.log(buf.toString('utf8'));
-// prints: 68656c6c6f20776f726c64
+var requestHTTP = require('request');
+
+requestHTTP.post('http://sl.hexino.ir/rest/update_match_result',
+    {
+        form:{
+            roomID: 3,
+            user1ID: 18,
+            user2ID: 20,
+            winner: 0,
+            turn: 3
+        }   
+    },function (error, response, res_body) {
+        console.log(res_body)
+    })
