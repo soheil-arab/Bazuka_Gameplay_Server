@@ -267,7 +267,7 @@ wsServer.on('request', function (request) {
                 room.splice(j, 1);
         }
         if (room.length == 0) {
-            setTimeout(close_empty_room, 10*1000, 0, roomID);
+            setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
         }
         //for (var i = 0 ; i < room.length ; i++) {
         //    uid = room[i];
