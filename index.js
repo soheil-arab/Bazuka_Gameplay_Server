@@ -93,14 +93,14 @@ wsServer.on('request', function (request) {
                     }
                     else {
                         //fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);                                                                        
-                        logger(
-                                 chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
-                                   room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+                        logger(chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
+                                room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+
                         if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0) {
-                            fs.appendFile(room_metadata[header.roomID]['log_file_err'], room_metadata[header.roomID]['match_state'][state_num], function (err) {
+                            fs.writeFile(room_metadata[header.roomID]['log_file_err'] + "_state#" + state_num + "_1.log", room_metadata[header.roomID]['match_state'][state_num], function (err) {
                                 if (!err) {
-                                    fs.appendFile(room_metadata[header.roomID]['log_file_err'], message_object);
-                                }
+                                    fs.writeFile(room_metadata[header.roomID]['log_file_err'] + "_state#" + state_num + "_2.log", message_object)
+                                    }
                             });
                         }
                     }
@@ -406,7 +406,7 @@ function acceptConnection(request) {
         room_metadata[requestData.RoomID]['last_state'] = -1;
         room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log',
           { flags: "w+", defaultEncoding: null, autoClose: true });
-        room_metadata[requestData.RoomID]['log_file_err'] = './log/error/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log';
+        room_metadata[requestData.RoomID]['log_file_err'] = './log/error/room_' + requestData.RoomID + '_' + new Date().toISOString();
 
         room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ') + chalkInMsg(Object.keys(clients_connection)));
