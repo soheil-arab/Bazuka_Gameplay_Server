@@ -386,7 +386,7 @@ function acceptConnection(request) {
     }
 
     var currentRoom = rooms[requestData.RoomID];
-
+    logger(chalkInMsg('room len : ' + currentRoom.length + ' state : ' + room_metadata[requestData.RoomID]['state']));
     if (currentRoom.length == 2 && room_metadata[requestData.RoomID]['state'] == 'wait') {
         room_metadata[requestData.RoomID]['match_state'] = {};
         room_metadata[requestData.RoomID]['turn_count'] = 0;
