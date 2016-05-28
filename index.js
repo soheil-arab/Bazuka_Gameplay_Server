@@ -381,15 +381,15 @@ function acceptConnection(request) {
         room_metadata[requestData.RoomID]['state'] = 'wait';
     }
 
-    if (rooms[requestData.RoomID].length < 2 && room_metadata[requestData.RoomID]['state'] == 'wait')
+    if (rooms[requestData.RoomID].length < 2 && room_metadata[requestData.RoomID]['state'] == 'wait') {
         rooms[requestData.RoomID].push(requestData.UserID);
+    }
 
     var currentRoom = rooms[requestData.RoomID];
 
     if (currentRoom.length == 2 && room_metadata[requestData.RoomID]['state'] == 'wait') {
         room_metadata[requestData.RoomID]['match_state'] = {};
         room_metadata[requestData.RoomID]['turn_count'] = 0;
-        //var turn = currentRoom[0];
         var init_buf = makeInintData(currentRoom, requestData);
 
         for (var i = 0 ; i < currentRoom.length ; i++) {
@@ -411,7 +411,7 @@ function acceptConnection(request) {
         room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ') + chalkInMsg(Object.keys(clients_connection)));
     }
-    else if (currentRoom.length < 2 && room_state_dict[requestData.RoomID] == 'play') {
+    else if (currentRoom.length <= 2 && room_state_dict[requestData.RoomID] == 'play') {
         //TODO:disconnected user connected again
         logger(chalkInMsg("disconnected user connected again"));
         var recon_buf = makeReconnectData(requestData);
