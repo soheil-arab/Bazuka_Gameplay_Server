@@ -413,6 +413,7 @@ function acceptConnection(request) {
     }
     else if (currentRoom.length < 2 && room_state_dict[requestData.RoomID] == 'play') {
         //TODO:disconnected user connected again
+        logger(chalkInMsg("disconnected user connected again"));
         var recon_buf = makeReconnectData(requestData);
         try {
             connection.sendBytes(recon_buf, function (err) {
