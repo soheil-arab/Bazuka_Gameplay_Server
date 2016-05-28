@@ -37,7 +37,7 @@ var rooms = {};
 var room_metadata = {};
 var disconnect_rooms = {};
 
-var turn_time = 30 * 1000;
+var turn_time = 35 * 1000;
 
 var server = http.createServer(function (request, response) {
 });
@@ -138,6 +138,7 @@ wsServer.on('request', function (request) {
 
                         room_metadata[header.roomID]['timeout_obj'] =
                             setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
+                        room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();
 
                     }
                     else {
@@ -399,7 +400,8 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        setTimeout(setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        room_metadata[requestData.RoomID]['timeout_obj'] = (setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        room_metadata[requestData.RoomID]['change_turn_time'] = new Date().getTime();
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log',
@@ -455,7 +457,7 @@ function setTurnTimeout(metadata, roomID) {
     logger("turn --> " + metadata["users"][turn_idx]);
     buf.write(metadata['users'][turn_idx].toString(), 24, 30);
     metadata['timeout_obj'] = setTimeout(setTurnTimeout, turn_time, metadata, roomID);
-
+    metadata['change_turn_time'] = new Date().getTime();
     for (var i = 0 ; i < room.length ; i++) {
         var uid = room[i];
         try {
