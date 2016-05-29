@@ -277,8 +277,8 @@ wsServer.on('request', function (request) {
         if (room != undefined) {
             disconnect_users[user] = {};
             console.log(roomID + ' -> ' + user);
-            disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, roomID, user);
             disconnect_users[user]['roomID'] = roomID;
+            console.log(room.length);
             for (var j = 0 ; j < room.length ; j++) {
                 uid = room[j];
                 if (uid == user)
@@ -287,6 +287,8 @@ wsServer.on('request', function (request) {
             if (room.length == 0) {
                 setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
             }
+            console.log(room.length);
+            disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, roomID, user);
         }
         //for (var i = 0 ; i < room.length ; i++) {
         //    uid = room[i];
