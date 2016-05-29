@@ -38,7 +38,7 @@ var room_metadata = {};
 var disconnect_rooms = {};
 var disconnect_users = {};
 var turn_time = 35 * 1000;
-var reject_time = 20 * 1000;
+var reject_time = 18 * 1000;
 var server = http.createServer(function (request, response) {
 });
 server.listen(webSocketsServerPort, function () {
@@ -615,42 +615,43 @@ function finishGameByLeave(roomID, userID) {
             var user2 = (x['user2']);
             var _roomID = x['roomID'];
             var room = rooms[_roomID];
+            for (var i = 0; i < room.length; i++) {
+                var _uid = room_metadata[_roomID]['users'][i];
+                const buf = Buffer.allocUnsafe(36);
+                buf.writeUInt32LE(_uid, 0);
+                buf.writeUInt32LE(_roomID, 4);
+                buf.writeUInt32LE(127, 8);
+                buf.writeUInt32LE(12, 12);
+                buf.writeUInt32LE(0, 16);
+                buf.writeUInt32LE(0, 20);
 
-            var _uid = room_metadata[_roomID]['users'][x['winner']];
-            const buf = Buffer.allocUnsafe(36);
-            buf.writeUInt32LE(_uid, 0);
-            buf.writeUInt32LE(_roomID, 4);
-            buf.writeUInt32LE(127, 8);
-            buf.writeUInt32LE(12, 12);
-            buf.writeUInt32LE(0, 16);
-            buf.writeUInt32LE(0, 20);
 
+                if (_uid == user1['userID']) {
+                    buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
+                    buf.writeUInt32LE(user1['trophy_sum'], 28);
+                    buf.writeUInt32LE(user1['trophy_diff'], 32);
 
-            if (_uid == user1['userID']) {
-                buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
-                buf.writeUInt32LE(user1['trophy_sum'], 28);
-                buf.writeUInt32LE(user1['trophy_diff'], 32);
-
-            } else if (_uid == user2['userID']) {
-                buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
-                buf.writeUInt32LE(user2['trophy_sum'], 28);
-                buf.writeUInt32LE(user2['trophy_diff'], 32);
-            }
-
-            try {
-                clients_connection[_uid].sendBytes(buf, function (err) {
-                    if (err) {
-                        logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
-                    } else {
-
+                } else if (_uid == user2['userID']) {
+                    buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
+                    buf.writeUInt32LE(user2['trophy_sum'], 28);
+                    buf.writeUInt32LE(user2['trophy_diff'], 32);
+                }
+                if (clients_connection[_uid] != undefined) {
+                    try {
+                        clients_connection[_uid].sendBytes(buf, function (err) {
+                            if (err) {
+                                logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
+                            } else {
+                                room_metadata[_roomID]['state'] = 'fuck state';
+                            }
+                        });
+                    } catch (e) {
+                        logger(chalkError('match_res exception message to ' + _uid + " exception : " + e));
                     }
-                });
-            } catch (e) {
-                logger(chalkError('match_res exception message to ' + _uid + " exception : " + e));
+                    room_metadata[_roomID]['log_file_ws'].end();
+                    fs.writeFile('./log/ForceFinish/' + new Date().toISOString + '_room#' + roomID + '.log', userID);
+                }
             }
-            room_metadata[_roomID]['log_file_ws'].end();
-            fs.writeFile('./log/ForceFinish/' + new Date().toISOString + '_room#' + roomID + '.log', userID);
-            room_metadata[_roomID]['state'] = 'fuck stete';
 
         }
         //TODO: remove room metadata from memory
