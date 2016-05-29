@@ -155,6 +155,7 @@ wsServer.on('request', function (request) {
                 case 5:
                     var winnerID = message_object.slice(0, 32).toString('utf8');
                     var p1score, p2score;
+                    console.log('buffer : ' + message_object.slice(32));
                     message_object.readInt32LE(p1score, 32);
                     message_object.readInt32LE(p2score, 36);
                     console.log('winnerID : ' + winnerID + ' p1score : ' + p1score + ' p2score : ' + p2score);
