@@ -271,8 +271,11 @@ wsServer.on('request', function (request) {
         var user = connection['userID'];
         var uid;
         clients_connection[user] = undefined;
+        console.log(room + ' fuck ' + user);
+
         if (room != undefined) {
             disconnect_users[user] = {};
+            console.log(room + ' -> ' + user);
             disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, room, user);
             disconnect_users[user]['roomID'] = room;
             for (var j = 0 ; j < room.length ; j++) {
