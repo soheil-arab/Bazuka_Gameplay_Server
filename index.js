@@ -73,7 +73,7 @@ wsServer.on('request', function (request) {
             var header = parseHeader(dataBuffer);
             var room = rooms[header.roomID];
             var srcUID = header.userID;
-            if (room_metadata[header.roomID]['state'] != 'play')
+            if (room_metadata[header.roomID]['state'] != 'play' && room_metadata[header.roomID]['state'] != 'finish_1')
                 return;
             var message_object = dataBuffer.slice(24);
             console.log(header);
