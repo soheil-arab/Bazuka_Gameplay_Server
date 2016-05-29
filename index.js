@@ -261,13 +261,15 @@ wsServer.on('request', function (request) {
         var user = connection['userID'];
         var uid;
         clients_connection[user] = undefined;
-        for (var j = 0 ; j < room.length ; j++) {
-            uid = room[j];
-            if (uid == user)
-                room.splice(j, 1);
-        }
-        if (room.length == 0) {
-            setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
+        if (room != undefined) {
+            for (var j = 0 ; j < room.length ; j++) {
+                uid = room[j];
+                if (uid == user)
+                    room.splice(j, 1);
+            }
+            if (room.length == 0) {
+                setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
+            }
         }
         //for (var i = 0 ; i < room.length ; i++) {
         //    uid = room[i];
@@ -411,25 +413,25 @@ function acceptConnection(request) {
         room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
         logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('init data sent to clients_connection :\n ') + chalkInMsg(Object.keys(clients_connection)));
     }
-    //else if (currentRoom.length <= 2 && room_metadata[requestData.RoomID]['state'] == 'play') {
-    //    //TODO:disconnected user connected again
-    //    logger(chalkInMsg("disconnected user connected again"));
-    //    var recon_buf = makeReconnectData(requestData);
-    //    try {
-    //        connection.sendBytes(recon_buf, function (err) {
-    //            if (err) {
-    //                logger('reconnect error');
-    //            }
-    //            else {
-    //                rooms[requestData.RoomID].push(requestData.UserID);
-    //                logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('user joined again!'));
-    //            }
-    //        });
-    //    }
-    //    catch (e) {
-    //        logger(chalkError('send reconnect data exception : ' + e));
-    //    }
-    //}
+    else if (currentRoom.length <= 2 && room_metadata[requestData.RoomID]['state'] == 'play') {
+        //TODO:disconnected user connected again
+        logger(chalkInMsg("disconnected user connected again"));
+        var recon_buf = makeReconnectData(currentRoom, requestData);
+        try {
+            connection.sendBytes(recon_buf, function (err) {
+                if (err) {
+                    logger('reconnect error');
+                }
+                else {
+                    rooms[requestData.RoomID].push(requestData.UserID);
+                    logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('user joined again!'));
+                }
+            });
+        }
+        catch (e) {
+            logger(chalkError('send reconnect data exception : ' + e));
+        }
+    }
     return connection;
 
 }
