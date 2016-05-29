@@ -580,6 +580,7 @@ function close_empty_room(counter, roomID) {
 
 function finishGameByLeave(roomID, userID) {
     var score = {};
+    console.log(room_metadata[roomID]);
     if (room_metadata[roomID]['users'][0] == userID) {
         score['user1'] = -1;
         score['user2'] = 3;
