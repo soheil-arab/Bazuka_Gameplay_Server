@@ -158,9 +158,14 @@ wsServer.on('request', function (request) {
                     message_object.copy(buf1, 0, 0, 32);
                     var winnerID = buf1.toString('utf8');
                     var p1score, p2score;
-                    console.log('buffer : ' + message_object.slice(32));
-                    message_object.readInt32LE(p1score, 32);
-                    message_object.readInt32LE(p2score, 36);
+                    const buf2 = Buffer.allocUnsafe(4);
+                    const buf3 = Buffer.allocUnsafe(4);
+                    message_object.copy(buf2,0,32,36);
+                    message_object.copy(buf3,0,36,40);
+                    console.log(buf2);
+                    console.log(buf3);
+                    buf2.readInt32LE(p1score, 32);
+                    buf3.readInt32LE(p2score, 36);
                     console.log('winnerID : ' + winnerID + ' p1score : ' + p1score + ' p2score : ' + p2score);
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
