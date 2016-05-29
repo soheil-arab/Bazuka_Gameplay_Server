@@ -36,9 +36,9 @@ var rooms = {};
 //var user_deck_dict = {};
 var room_metadata = {};
 var disconnect_rooms = {};
-
+var disconnect_users = {};
 var turn_time = 35 * 1000;
-
+var reject_time = 20 * 1000;
 var server = http.createServer(function (request, response) {
 });
 server.listen(webSocketsServerPort, function () {
@@ -107,7 +107,7 @@ wsServer.on('request', function (request) {
 
                     break;
                 case 6:
-                    var turnID = bin2String(message_object);
+//                    var turnID = bin2String(message_object);
                     logger('change turn struct data : ' + chalkInMsg(srcUID));
                     //if valid -->
                     var turn_idx = room_metadata[header.roomID]['turn_index'];
@@ -115,7 +115,7 @@ wsServer.on('request', function (request) {
                     logger('current turn : ' + currentTurn.toString());
                     if (currentTurn == srcUID) {
                         room_metadata[header.roomID]['turn_count'] += 1;
-                        clearTimeout(room_metadata[header.roomID]['timeout_obj']);
+                        //clearTimeout(room_metadata[header.roomID]['timeout_obj']);
                         room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                         for (var i = 0 ; i < room.length ; i++) {
@@ -136,10 +136,10 @@ wsServer.on('request', function (request) {
                             }
                         }
 
-                        room_metadata[header.roomID]['timeout_obj'] =
-                            setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
-                        room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();
-                        
+                        //room_metadata[header.roomID]['timeout_obj'] =
+                        //    setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
+                        //room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();
+
                     }
                     else {
                         logger(chalkError('invalid change turn request'));
@@ -166,8 +166,7 @@ wsServer.on('request', function (request) {
                         room_metadata[header.roomID]['state'] = 'finish';
                         if (winnerID != room_metadata[header.roomID]['winner_1'] ||
                             p1score != room_metadata[header.roomID]['p1score_1'] ||
-                            p2score != room_metadata[header.roomID]['p2score_1'])
-                        {
+                            p2score != room_metadata[header.roomID]['p2score_1']) {
 
                             logger(chalkError("client cheats in finish state"));
                             break;
@@ -273,6 +272,8 @@ wsServer.on('request', function (request) {
         var uid;
         clients_connection[user] = undefined;
         if (room != undefined) {
+            disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, room,user);
+            disconnect_users[user]['roomID'] = room;
             for (var j = 0 ; j < room.length ; j++) {
                 uid = room[j];
                 if (uid == user)
@@ -400,6 +401,12 @@ function acceptConnection(request) {
     var currentRoom = rooms[requestData.RoomID];
     logger(chalkInMsg('room len : ' + currentRoom.length + ' state : ' + room_metadata[requestData.RoomID]['state']));
     if (currentRoom.length == 2 && room_metadata[requestData.RoomID]['state'] == 'wait') {
+        var dc_obj = disconnect_users[requestData.UserID];
+        if(dc_obj != undefined){
+            if(dc_obj['roomID'] == requestData.RoomID){
+                clearTimeout(dc_obj['timeout_obj']);
+            }
+        }
         room_metadata[requestData.RoomID]['match_state'] = {};
         room_metadata[requestData.RoomID]['turn_count'] = 0;
         var init_buf = makeInintData(currentRoom, requestData);
@@ -413,8 +420,8 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        room_metadata[requestData.RoomID]['timeout_obj'] = (setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
-        room_metadata[requestData.RoomID]['change_turn_time'] = new Date().getTime();
+        //room_metadata[requestData.RoomID]['timeout_obj'] = (setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+        //room_metadata[requestData.RoomID]['change_turn_time'] = new Date().getTime();
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log',
@@ -560,11 +567,85 @@ function bin2String(array) {
 
 function close_empty_room(counter, roomID) {
     if (counter >= 3) {
-        clearTimeout(room_metadata[roomID]["timeout_obj"]);
+        //        clearTimeout(room_metadata[roomID]["timeout_obj"]);
         delete rooms[roomID];
         room_metadata[roomID]["state"] = "force_close";
     }
     else {
         setTimeout(close_empty_room, 10 * 1000, counter + 1, roomID);
     }
+}
+
+
+function finishGameByLeave(roomID, userID) {
+    var score = {};
+    if (room_metadata[header.roomID]['users'][0] == userID) {
+        score['user1'] = -1;
+        score['user2'] = 3;
+        score['winner'] = 0;
+    } else {
+        score['user1'] = 3;
+        score['user2'] = -1;
+        score['winner'] = 0;
+    }
+    requestHTTP.post('http://212.47.232.223/rest/update_match_result', {
+        form:
+            {
+                roomID: header.roomID,
+                user1ID: room_metadata[roomID]['users'][0],
+                user2ID: room_metadata[roomID]['users'][1],
+                winner: score['winner'],
+                user1Score: score['user1'],
+                user2Score: score['user2'],
+                turn: room_metadata[roomID]['turn_count']
+            }
+        },function (error, response, res_body) {
+      if (!error && response.statusCode == 200) {
+          var x = JSON.parse(res_body);
+          var user1 = (x['user1']);
+          var user2 = (x['user2']);
+          var _roomID = x['roomID'];
+          for (var i = 0; i < room.length; i++) {
+
+              var _uid = room_metadata[_roomID]['users'][i];
+              const buf = Buffer.allocUnsafe(36);
+              buf.writeUInt32LE(_uid, 0);
+              buf.writeUInt32LE(_roomID, 4);
+              buf.writeUInt32LE(127, 8);
+              buf.writeUInt32LE(12, 12);
+              buf.writeUInt32LE(0, 16);
+              buf.writeUInt32LE(0, 20);
+
+
+              if (_uid == user1['userID']) {
+                  buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
+                  buf.writeUInt32LE(user1['trophy_sum'], 28);
+                  buf.writeUInt32LE(user1['trophy_diff'], 32);
+
+              } else if (_uid == user2['userID']) {
+                  buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
+                  buf.writeUInt32LE(user2['trophy_sum'], 28);
+                  buf.writeUInt32LE(user2['trophy_diff'], 32);
+              }
+
+              try {
+                  clients_connection[_uid].sendBytes(buf, function (err) {
+                      if (err) {
+                          logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
+                      } else {
+
+                      }
+                  });
+              } catch (e) {
+                  logger(chalkError('match_res exception message to ' + _uid + " exception : " + e));
+              }
+              room_metadata[_roomID]['log_file_ws'].end();
+              fs.writeFile('./log/ForceFinish/'+new date().toISOString +'_room#'+ roomID+'.log',)
+          }
+
+      }
+      //TODO: remove room metadata from memory
+      logger("room " + _roomID + " finished!");
+  });
+
 }
