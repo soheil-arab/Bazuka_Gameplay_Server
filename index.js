@@ -38,7 +38,7 @@ var room_metadata = {};
 var disconnect_rooms = {};
 var disconnect_users = {};
 var turn_time = 35 * 1000;
-var reject_time = 6 * 1000;
+var reject_time = 20 * 1000;
 var server = http.createServer(function (request, response) {
 });
 server.listen(webSocketsServerPort, function () {
