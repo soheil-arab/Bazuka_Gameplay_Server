@@ -612,7 +612,7 @@ function finishGameByLeave(roomID, userID) {
             var user1 = (x['user1']);
             var user2 = (x['user2']);
             var _roomID = x['roomID'];
-            room = rooms[roomID];
+            var room = rooms[roomID];
             for (var i = 0; i < room.length; i++) {
 
                 var _uid = room_metadata[_roomID]['users'][i];
