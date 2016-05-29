@@ -38,7 +38,7 @@ var room_metadata = {};
 var disconnect_rooms = {};
 var disconnect_users = {};
 var turn_time = 35 * 1000;
-var reject_time = 18 * 1000;
+var reject_time = 6 * 1000;
 var server = http.createServer(function (request, response) {
 });
 server.listen(webSocketsServerPort, function () {
@@ -613,11 +613,11 @@ function finishGameByLeave(roomID, userID) {
     }, function (error, response, res_body) {
         console.log(res_body)
         if (!error && response.statusCode == 200) {
-            room_metadata[_roomID]['state'] = 'fuck state';
             var x = JSON.parse(res_body);
             var user1 = (x['user1']);
             var user2 = (x['user2']);
             var _roomID = x['roomID'];
+            room_metadata[_roomID]['state'] = 'fuck state';
             var room = rooms[_roomID];
             for (var i = 0; i < room.length; i++) {
                 var _uid = room[i]['userID'];
