@@ -596,7 +596,7 @@ function finishGameByLeave(roomID, userID) {
     requestHTTP.post('http://212.47.232.223/rest/update_match_result', {
         form:
             {
-                roomID: header.roomID,
+                roomID: roomID,
                 user1ID: room_metadata[roomID]['users'][0],
                 user2ID: room_metadata[roomID]['users'][1],
                 winner: score['winner'],
