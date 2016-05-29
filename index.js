@@ -139,7 +139,7 @@ wsServer.on('request', function (request) {
                         room_metadata[header.roomID]['timeout_obj'] =
                             setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
                         room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();
-
+                        
                     }
                     else {
                         logger(chalkError('invalid change turn request'));
