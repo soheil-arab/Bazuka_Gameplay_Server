@@ -154,7 +154,9 @@ wsServer.on('request', function (request) {
                     break;
                 case 5:
                     console.log(message_object);
-                    var winnerID = message_object.slice(0, 32).toString('utf8');
+                    const buf1 = Buffer.allocUnsafe(32);
+                    message_object.copy(buf1, 0, 0, 32);
+                    var winnerID = buf1.toString('utf8');
                     var p1score, p2score;
                     console.log('buffer : ' + message_object.slice(32));
                     message_object.readInt32LE(p1score, 32);
