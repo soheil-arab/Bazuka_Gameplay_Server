@@ -268,16 +268,16 @@ wsServer.on('request', function (request) {
     connection.on('close', function (reasonCode, description) {
         logger((new Date()) + ' -> \n\t' + chalkNotif("Connection ID: " + connection['userID'] + ' disconnected.'));
         var room = rooms[connection['roomID']];
+        var roomID = connection['roomID'];
         var user = connection['userID'];
         var uid;
         clients_connection[user] = undefined;
-        console.log(room + ' fuck ' + user);
 
         if (room != undefined) {
             disconnect_users[user] = {};
-            console.log(room + ' -> ' + user);
-            disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, room, user);
-            disconnect_users[user]['roomID'] = room;
+            console.log(roomID + ' -> ' + user);
+            disconnect_users[user]['timeout_obj'] = setTimeout(finishGameByLeave, reject_time, roomID, user);
+            disconnect_users[user]['roomID'] = roomID;
             for (var j = 0 ; j < room.length ; j++) {
                 uid = room[j];
                 if (uid == user)
