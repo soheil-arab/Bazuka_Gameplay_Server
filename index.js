@@ -640,10 +640,10 @@ function finishGameByLeave(roomID, userID) {
                     buf.writeUInt32LE(user2['trophy_sum'], 28);
                     buf.writeInt32LE(user2['trophy_diff'], 32);
                 }
-                if (room[i] != undefined) {
+                if (clients_connection[room[i]] != undefined) {
                     console.log('hi there');
                     try {
-                        room[i].sendBytes(buf, function (err) {
+                        clients_connection[room[i]].sendBytes(buf, function (err) {
                             if (err) {
                                 logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
                             } else {
