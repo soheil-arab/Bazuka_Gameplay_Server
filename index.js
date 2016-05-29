@@ -590,11 +590,11 @@ function finishGameByLeave(roomID, userID) {
     if (room_metadata[roomID]['users'][0] == userID) {
         score['user1'] = -1;
         score['user2'] = 3;
-        score['winner'] = 0;
+        score['winner'] = 1;
     } else {
         score['user1'] = 3;
         score['user2'] = -1;
-        score['winner'] = 1;
+        score['winner'] = 0;
     }
     requestHTTP.post('http://212.47.232.223/rest/update_match_result', {
         form:
