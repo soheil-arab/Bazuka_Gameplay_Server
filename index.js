@@ -274,6 +274,8 @@ wsServer.on('request', function (request) {
         var roomID = connection['roomID'];
         var user = connection['userID'];
         var uid;
+        if (room_metadata[roomID]['state'] != 'play')
+            return;
         clients_connection[user] = undefined;
 
         if (room != undefined) {
@@ -379,7 +381,6 @@ function acceptConnection(request) {
         DeviceID: request.resourceURL.query.userID,
         Ticket: 1//TODO: from query string
     };
-
     var verification = verify_ticket(requestData.Ticket, requestData.RoomID, requestData.UserID); //TODO: verify ticket with symetric encryption
 
     if (requestData.UserID == undefined || requestData.RoomID == undefined ||
