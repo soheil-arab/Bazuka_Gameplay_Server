@@ -100,7 +100,7 @@ wsServer.on('request', function (request) {
                             fs.writeFile(room_metadata[header.roomID]['log_file_err'] + "_state#" + state_num + "_1.log", room_metadata[header.roomID]['match_state'][state_num], function (err) {
                                 if (!err) {
                                     fs.writeFile(room_metadata[header.roomID]['log_file_err'] + "_state#" + state_num + "_2.log", message_object)
-                                    }
+                                }
                             });
                         }
                     }
@@ -151,15 +151,24 @@ wsServer.on('request', function (request) {
 
                     break;
                 case 5:
-                    var winnerID = message_object.toString('utf8');
+                    var winnerID = message_object.slice(0, 32).toString('utf8');
+                    var p1score, p2score;
+                    message_object.readUInt32LE(p1score, 32);
+                    message_object.readUInt32LE(p2score, 36);
                     console.log('winnerID : ' + winnerID);
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
                         room_metadata[header.roomID]['winner_1'] = winnerID;
+                        room_metadata[header.roomID]['p1score_1'] = p1score;
+                        room_metadata[header.roomID]['p2score_1'] = p2score;
                     }
                     else if (room_metadata[header.roomID]['state'] == 'finish_1') {
                         room_metadata[header.roomID]['state'] = 'finish';
-                        if (winnerID != room_metadata[header.roomID]['winner_1']) {
+                        if (winnerID != room_metadata[header.roomID]['winner_1'] ||
+                            p1score != room_metadata[header.roomID]['p1score_1'] ||
+                            p2score != room_metadata[header.roomID]['p2score_1'])
+                        {
+
                             logger(chalkError("client cheats in finish state"));
                             break;
 
@@ -173,6 +182,8 @@ wsServer.on('request', function (request) {
                                   user1ID: room_metadata[header.roomID]['users'][0],
                                   user2ID: room_metadata[header.roomID]['users'][1],
                                   winner: room_metadata[header.roomID]['users'][0] == winnerID ? 0 : 1,
+                                  user1Score: p1score,
+                                  user2Score: p2score,
                                   turn: room_metadata[header.roomID]['turn_count']
                               }
                           },
