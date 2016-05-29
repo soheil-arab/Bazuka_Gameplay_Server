@@ -155,9 +155,9 @@ wsServer.on('request', function (request) {
                 case 5:
                     var winnerID = message_object.slice(0, 32).toString('utf8');
                     var p1score, p2score;
-                    message_object.readUInt32LE(p1score, 32);
-                    message_object.readUInt32LE(p2score, 36);
-                    console.log('winnerID : ' + winnerID);
+                    message_object.readInt32LE(p1score, 32);
+                    message_object.readInt32LE(p2score, 36);
+                    console.log('winnerID : ' + winnerID + ' p1score : ' + p1score + ' p2score : ' + p2score);
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
                         room_metadata[header.roomID]['winner_1'] = winnerID;
@@ -346,12 +346,12 @@ function logger(log_txt) {
  * @param {Buffer} buf byte array input
  */
 function parseHeader(buf) {
-    var userID = buf.readUInt32LE(0);
-    var roomID = buf.readUInt32LE(4);
-    var msgType = buf.readUInt32LE(8);
-    var msgLen = buf.readUInt32LE(12);
-    var dataRes1 = buf.readUInt32LE(16);
-    var dataRes2 = buf.readUInt32LE(20);
+    var userID = buf.readInt32LE(0);
+    var roomID = buf.readInt32LE(4);
+    var msgType = buf.readInt32LE(8);
+    var msgLen = buf.readInt32LE(12);
+    var dataRes1 = buf.readInt32LE(16);
+    var dataRes2 = buf.readInt32LE(20);
     return {
         userID: userID,
         roomID: roomID,
@@ -589,7 +589,6 @@ function close_empty_room(counter, roomID) {
 
 function finishGameByLeave(roomID, userID) {
     var score = {};
-    console.log(room_metadata[roomID]);
     if (room_metadata[roomID]['users'][0] == userID) {
         score['user1'] = -1;
         score['user2'] = 3;
@@ -631,19 +630,16 @@ function finishGameByLeave(roomID, userID) {
                 buf.writeInt32LE(0, 20);
 
                 if (_uid == user1['userID']) {
-                    console.log('u1');
                     buf.writeInt32LE((x['winner'] == 0 ? 1 : 0), 24);
                     buf.writeInt32LE(user1['trophy_sum'], 28);
                     buf.writeInt32LE(user1['trophy_diff'], 32);
 
                 } else if (_uid == user2['userID']) {
-                    console.log('u2');
                     buf.writeInt32LE((x['winner'] == 1 ? 1 : 0), 24);
                     buf.writeInt32LE(user2['trophy_sum'], 28);
                     buf.writeInt32LE(user2['trophy_diff'], 32);
                 }
                 if (clients_connection[room[i]] != undefined) {
-                    console.log('hi there');
                     try {
                         clients_connection[room[i]].sendBytes(buf, function (err) {
                             if (err) {
