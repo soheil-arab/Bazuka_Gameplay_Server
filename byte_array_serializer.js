@@ -1,17 +1,9 @@
-
-var requestHTTP = require('request');
-
-requestHTTP.post(
-                          'http://212.47.232.223/rest/update_match_result',
-                          {
-                              form: {
-                                  roomID: 12,
-                                  user1ID: 38,
-                                  user2ID: 37,
-                                  winner: 0,
-                                  user1Score: 1,
-                                  user2Score: 2,
-                                  turn: 18
-                              }
-                          },
-                          function (error, response, res_body) { console.log(res_body)});
+const buf = Buffer.allocUnsafe(4);
+buf.writeInt32LE(1, 0);
+console.log(buf);
+const buf2 = Buffer.allocUnsafe(4);
+buf.copy(buf2, 0, 0, 4);
+console.log(buf2);
+var a = 123;
+a = buf2.readInt32LE(0);
+console.log(a);
