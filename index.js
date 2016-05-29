@@ -211,12 +211,12 @@ wsServer.on('request', function (request) {
                                       if (_uid == user1['userID']) {
                                           buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
                                           buf.writeUInt32LE(user1['trophy_sum'], 28);
-                                          buf.writeUInt32LE(user1['trophy_diff'], 32);
+                                          buf.writeInt32LE(user1['trophy_diff'], 32);
 
                                       } else if (_uid == user2['userID']) {
                                           buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
                                           buf.writeUInt32LE(user2['trophy_sum'], 28);
-                                          buf.writeUInt32LE(user2['trophy_diff'], 32);
+                                          buf.writeInt32LE(user2['trophy_diff'], 32);
                                       }
 
                                       try {
@@ -619,7 +619,7 @@ function finishGameByLeave(roomID, userID) {
             var _roomID = x['roomID'];
             var room = rooms[_roomID];
             for (var i = 0; i < room.length; i++) {
-                var _uid = room_metadata[_roomID]['users'][i];
+                var _uid = room[i]['userID'];
                 const buf = Buffer.allocUnsafe(36);
                 buf.writeUInt32LE(_uid, 0);
                 buf.writeUInt32LE(_roomID, 4);
@@ -628,16 +628,15 @@ function finishGameByLeave(roomID, userID) {
                 buf.writeUInt32LE(0, 16);
                 buf.writeUInt32LE(0, 20);
 
-
                 if (_uid == user1['userID']) {
                     buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
                     buf.writeUInt32LE(user1['trophy_sum'], 28);
-                    buf.writeUInt32LE(user1['trophy_diff'], 32);
+                    buf.writeInt32LE(user1['trophy_diff'], 32);
 
                 } else if (_uid == user2['userID']) {
                     buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
                     buf.writeUInt32LE(user2['trophy_sum'], 28);
-                    buf.writeUInt32LE(user2['trophy_diff'], 32);
+                    buf.writeInt32LE(user2['trophy_diff'], 32);
                 }
                 if (clients_connection[_uid] != undefined) {
                     try {
