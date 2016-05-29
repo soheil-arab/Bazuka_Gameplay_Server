@@ -173,6 +173,7 @@ wsServer.on('request', function (request) {
 
                         }
                         room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                        console.log('p1score : ' + p1score + ' p2score : ' + p2score);
                         requestHTTP.post(
                           'http://212.47.232.223/rest/update_match_result',
                           {
@@ -605,6 +606,7 @@ function finishGameByLeave(roomID, userID) {
                 turn: room_metadata[roomID]['turn_count']
             }
     }, function (error, response, res_body) {
+        console.log(res_body)
         if (!error && response.statusCode == 200) {
             var x = JSON.parse(res_body);
             var user1 = (x['user1']);
