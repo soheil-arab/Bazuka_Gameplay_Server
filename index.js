@@ -613,6 +613,7 @@ function finishGameByLeave(roomID, userID) {
     }, function (error, response, res_body) {
         console.log(res_body)
         if (!error && response.statusCode == 200) {
+            room_metadata[_roomID]['state'] = 'fuck state';
             var x = JSON.parse(res_body);
             var user1 = (x['user1']);
             var user2 = (x['user2']);
@@ -638,13 +639,13 @@ function finishGameByLeave(roomID, userID) {
                     buf.writeUInt32LE(user2['trophy_sum'], 28);
                     buf.writeInt32LE(user2['trophy_diff'], 32);
                 }
-                if (clients_connection[_uid] != undefined) {
+                if (room[i] != undefined) {
+                    console.log('hi there');
                     try {
-                        clients_connection[_uid].sendBytes(buf, function (err) {
+                        room[i].sendBytes(buf, function (err) {
                             if (err) {
                                 logger(chalkDate(new Date()) + ' ->\n\t' + 'match_res err ' + chalkError(err));
                             } else {
-                                room_metadata[_roomID]['state'] = 'fuck state';
                             }
                         });
                     } catch (e) {
