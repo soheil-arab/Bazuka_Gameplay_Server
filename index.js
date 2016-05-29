@@ -164,8 +164,8 @@ wsServer.on('request', function (request) {
                     message_object.copy(buf3,0,36,40);
                     console.log(buf2);
                     console.log(buf3);
-                    p1score = buf2.readInt32LE(32);
-                    p2score = buf2.readInt32LE(36);
+                    p1score = buf2.readInt32LE(0);
+                    p2score = buf3.readInt32LE(0);
                     console.log('winnerID : ' + winnerID + ' p1score : ' + p1score + ' p2score : ' + p2score);
                     if (room_metadata[header.roomID]['state'] == 'play') {
                         room_metadata[header.roomID]['state'] = 'finish_1';
