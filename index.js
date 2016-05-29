@@ -200,22 +200,22 @@ wsServer.on('request', function (request) {
 
                                       var _uid = room_metadata[_roomID]['users'][i];
                                       const buf = Buffer.allocUnsafe(36);
-                                      buf.writeUInt32LE(_uid, 0);
-                                      buf.writeUInt32LE(_roomID, 4);
-                                      buf.writeUInt32LE(127, 8);
-                                      buf.writeUInt32LE(12, 12);
-                                      buf.writeUInt32LE(0, 16);
-                                      buf.writeUInt32LE(0, 20);
+                                      buf.writeInt32LE(_uid, 0);
+                                      buf.writeInt32LE(_roomID, 4);
+                                      buf.writeInt32LE(127, 8);
+                                      buf.writeInt32LE(12, 12);
+                                      buf.writeInt32LE(0, 16);
+                                      buf.writeInt32LE(0, 20);
 
 
                                       if (_uid == user1['userID']) {
-                                          buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
-                                          buf.writeUInt32LE(user1['trophy_sum'], 28);
+                                          buf.writeInt32LE((x['winner'] == 0 ? 1 : 0), 24);
+                                          buf.writeInt32LE(user1['trophy_sum'], 28);
                                           buf.writeInt32LE(user1['trophy_diff'], 32);
 
                                       } else if (_uid == user2['userID']) {
-                                          buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
-                                          buf.writeUInt32LE(user2['trophy_sum'], 28);
+                                          buf.writeInt32LE((x['winner'] == 1 ? 1 : 0), 24);
+                                          buf.writeInt32LE(user2['trophy_sum'], 28);
                                           buf.writeInt32LE(user2['trophy_diff'], 32);
                                       }
 
@@ -477,12 +477,12 @@ function setTurnTimeout(metadata, roomID) {
     metadata['turn_index'] = 1 - metadata['turn_index'];
     metadata['turn_count'] += 1;
     const buf = Buffer.allocUnsafe(6 * 4 + 32);
-    buf.writeUInt32LE(0, 0);
-    buf.writeUInt32LE(roomID, 4);
-    buf.writeUInt32LE(6, 8);
-    buf.writeUInt32LE(30, 12);
-    buf.writeUInt32LE(0, 16);
-    buf.writeUInt32LE(0, 20);
+    buf.writeInt32LE(0, 0);
+    buf.writeInt32LE(roomID, 4);
+    buf.writeInt32LE(6, 8);
+    buf.writeInt32LE(30, 12);
+    buf.writeInt32LE(0, 16);
+    buf.writeInt32LE(0, 20);
     var turn_idx = metadata['turn_index'];
     logger("turn --> " + metadata["users"][turn_idx]);
     buf.write(metadata['users'][turn_idx].toString(), 24, 30);
@@ -523,18 +523,18 @@ function makeInintData(currentRoom, requestData) {
     //    const buf = Buffer.allocUnsafe(68+60);
 
     //header struct
-    buf.writeUInt32LE(0, 0);
-    buf.writeUInt32LE(requestData.RoomID, 4);
-    buf.writeUInt32LE(0, 8);
-    buf.writeUInt32LE(44, 12);
-    buf.writeUInt32LE(0, 16);
-    buf.writeUInt32LE(0, 20);
+    buf.writeInt32LE(0, 0);
+    buf.writeInt32LE(requestData.RoomID, 4);
+    buf.writeInt32LE(0, 8);
+    buf.writeInt32LE(44, 12);
+    buf.writeInt32LE(0, 16);
+    buf.writeInt32LE(0, 20);
     //init data
-    buf.writeUInt32LE(userID1, 24);
-    buf.writeUInt32LE(userID2, 28);
-    buf.writeUInt32LE(turn, 32);
+    buf.writeInt32LE(userID1, 24);
+    buf.writeInt32LE(userID2, 28);
+    buf.writeInt32LE(turn, 32);
     for (var i = 0; i < 8 ; i++) {
-        buf.writeUInt32LE(shuffled_order[i], 36 + (i * 4));
+        buf.writeInt32LE(shuffled_order[i], 36 + (i * 4));
     }
     //    buf.write(username1, 68, 30);
     //    buf.write(username2, 98, 30);
@@ -552,15 +552,15 @@ function makeReconnectData(requestData) {
     var buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
     const buf = Buffer.allocUnsafe(buf_size);
     //header struct
-    buf.writeUInt32LE(0, 0);
-    buf.writeUInt32LE(requestData.RoomID, 4);
-    buf.writeUInt32LE(128, 8);
-    buf.writeUInt32LE(buf_size - 24, 12);
-    buf.writeUInt32LE(0, 16);
-    buf.writeUInt32LE(0, 20);
+    buf.writeInt32LE(0, 0);
+    buf.writeInt32LE(requestData.RoomID, 4);
+    buf.writeInt32LE(128, 8);
+    buf.writeInt32LE(buf_size - 24, 12);
+    buf.writeInt32LE(0, 16);
+    buf.writeInt32LE(0, 20);
     //reconnect data
-    buf.writeUInt32LE(state_num, 24);
-    buf.writeUInt32LE(turn, 28);
+    buf.writeInt32LE(state_num, 24);
+    buf.writeInt32LE(turn, 28);
     room_metadata[requestData.RoomID]['match_state'][state_num].copy(buf, 32);
 
     return buf;
@@ -621,23 +621,25 @@ function finishGameByLeave(roomID, userID) {
             var room = rooms[_roomID];
             console.log('fuckin current room : ' + room);
             for (var i = 0; i < room.length; i++) {
-                var _uid = room[i]['userID'];
+                var _uid = room[i];
                 const buf = Buffer.allocUnsafe(36);
-                buf.writeUInt32LE(_uid, 0);
-                buf.writeUInt32LE(_roomID, 4);
-                buf.writeUInt32LE(127, 8);
-                buf.writeUInt32LE(12, 12);
-                buf.writeUInt32LE(0, 16);
-                buf.writeUInt32LE(0, 20);
+                buf.writeInt32LE(_uid, 0);
+                buf.writeInt32LE(_roomID, 4);
+                buf.writeInt32LE(127, 8);
+                buf.writeInt32LE(12, 12);
+                buf.writeInt32LE(0, 16);
+                buf.writeInt32LE(0, 20);
 
                 if (_uid == user1['userID']) {
-                    buf.writeUInt32LE((x['winner'] == 0 ? 1 : 0), 24);
-                    buf.writeUInt32LE(user1['trophy_sum'], 28);
+                    console.log('u1');
+                    buf.writeInt32LE((x['winner'] == 0 ? 1 : 0), 24);
+                    buf.writeInt32LE(user1['trophy_sum'], 28);
                     buf.writeInt32LE(user1['trophy_diff'], 32);
 
                 } else if (_uid == user2['userID']) {
-                    buf.writeUInt32LE((x['winner'] == 1 ? 1 : 0), 24);
-                    buf.writeUInt32LE(user2['trophy_sum'], 28);
+                    console.log('u2');
+                    buf.writeInt32LE((x['winner'] == 1 ? 1 : 0), 24);
+                    buf.writeInt32LE(user2['trophy_sum'], 28);
                     buf.writeInt32LE(user2['trophy_diff'], 32);
                 }
                 if (clients_connection[room[i]] != undefined) {
