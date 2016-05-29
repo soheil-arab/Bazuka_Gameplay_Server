@@ -191,8 +191,8 @@ wsServer.on('request', function (request) {
                               }
                           },
                           function (error, response, res_body) {
-                              console.log(res_body)
                               if (!error && response.statusCode == 200) {
+                                  console.log(res_body)
                                   var x = JSON.parse(res_body);
                                   var user1 = (x['user1']);
                                   var user2 = (x['user2']);
