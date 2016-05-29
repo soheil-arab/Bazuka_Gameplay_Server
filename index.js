@@ -136,9 +136,9 @@ wsServer.on('request', function (request) {
                             }
                         }
 
-                        room_metadata[header.roomID]['timeout_obj'] =
+                        /*room_metadata[header.roomID]['timeout_obj'] =
                             setTimeout(setTurnTimeout, turn_time, room_metadata[header.roomID], header.roomID);
-                        room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();
+                        room_metadata[header.roomID]['change_turn_time'] = new Date().getTime();*/
 
                     }
                     else {
@@ -279,7 +279,7 @@ wsServer.on('request', function (request) {
                     room.splice(j, 1);
             }
             if (room.length == 0) {
-                setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
+               // setTimeout(close_empty_room, 10 * 1000, 0, connection['roomID']);
             }
         }
         //for (var i = 0 ; i < room.length ; i++) {
@@ -413,8 +413,8 @@ function acceptConnection(request) {
                 logger(chalkError('send init data exception : ' + e));
             }
         }
-        room_metadata[requestData.RoomID]['timeout_obj'] = (setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
-        room_metadata[requestData.RoomID]['change_turn_time'] = new Date().getTime();
+//        room_metadata[requestData.RoomID]['timeout_obj'] = (setTurnTimeout, turn_time, room_metadata[requestData.RoomID], requestData.RoomID);
+//        room_metadata[requestData.RoomID]['change_turn_time'] = new Date().getTime();
         room_metadata[requestData.RoomID]['state'] = 'play';
         room_metadata[requestData.RoomID]['last_state'] = -1;
         room_metadata[requestData.RoomID]['log_file_ws'] = fs.createWriteStream('./log/room_' + requestData.RoomID + '_' + new Date().toISOString() + '.log',
