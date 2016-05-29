@@ -648,7 +648,7 @@ function finishGameByLeave(roomID, userID) {
                     logger(chalkError('match_res exception message to ' + _uid + " exception : " + e));
                 }
                 room_metadata[_roomID]['log_file_ws'].end();
-                fs.writeFile('./log/ForceFinish/' + new date().toISOString + '_room#' + roomID + '.log', userID);
+                fs.writeFile('./log/ForceFinish/' + new Date().toISOString + '_room#' + roomID + '.log', userID);
             }
 
         }
