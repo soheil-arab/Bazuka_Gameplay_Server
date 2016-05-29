@@ -616,9 +616,10 @@ function finishGameByLeave(roomID, userID) {
             var x = JSON.parse(res_body);
             var user1 = (x['user1']);
             var user2 = (x['user2']);
-            var _roomID = x['roomID'];
+            var _roomID = parseInt(x['roomID'],10);
             room_metadata[_roomID]['state'] = 'fuck state';
             var room = rooms[_roomID];
+            console.log('fuckin current room : ' + room);
             for (var i = 0; i < room.length; i++) {
                 var _uid = room[i]['userID'];
                 const buf = Buffer.allocUnsafe(36);
