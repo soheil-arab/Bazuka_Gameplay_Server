@@ -454,19 +454,21 @@ function acceptConnection(request) {
         //TODO:disconnected user connected again
         logger(chalkInMsg("disconnected user connected again"));
         var recon_buf = makeReconnectData(requestData);
-        try {
-            connection.sendBytes(recon_buf, function (err) {
-                if (err) {
-                    logger('reconnect error');
-                }
-                else {
-                    rooms[requestData.RoomID].push(requestData.UserID);
-                    logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('user joined again!'));
-                }
-            });
-        }
-        catch (e) {
-            logger(chalkError('send reconnect data exception : ' + e));
+        if (recon_buf != null){
+            try {
+                connection.sendBytes(recon_buf, function (err) {
+                    if (err) {
+                        logger('reconnect error');
+                    }
+                    else {
+                        rooms[requestData.RoomID].push(requestData.UserID);
+                        logger(chalkDate(new Date()) + '->\n\t' + chalkNotif('user joined again!'));
+                    }
+                });
+            }
+            catch (e) {
+                logger(chalkError('send reconnect data exception : ' + e));
+            }
         }
     }
     return connection;
@@ -557,23 +559,26 @@ function makeReconnectData(requestData) {
     var state_num = room_metadata[requestData.RoomID]['last_state'];
     var turn_idx = room_metadata[requestData.RoomID]['turn_index'];
     var turn = room_metadata[requestData.RoomID]['users'][turn_idx];
-
-    var buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
-    const buf = Buffer.allocUnsafe(buf_size);
-    //header struct
-    buf.writeInt32LE(0, 0);
-    buf.writeInt32LE(requestData.RoomID, 4);
-    buf.writeInt32LE(128, 8);
-    buf.writeInt32LE(buf_size - 24, 12);
-    buf.writeInt32LE(0, 16);
-    buf.writeInt32LE(0, 20);
-    //reconnect data
-    buf.writeInt32LE(state_num, 24);
-    buf.writeInt32LE(turn, 28);
-    room_metadata[requestData.RoomID]['match_state'][state_num].copy(buf, 32);
-
-    return buf;
-
+    if(room_metadata[requestData.RoomID]['match_state'][state_num] != undefined){
+        var buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
+        const buf = Buffer.allocUnsafe(buf_size);
+        //header struct
+        buf.writeInt32LE(0, 0);
+        buf.writeInt32LE(requestData.RoomID, 4);
+        buf.writeInt32LE(128, 8);
+        buf.writeInt32LE(buf_size - 24, 12);
+        buf.writeInt32LE(0, 16);
+        buf.writeInt32LE(0, 20);
+        //reconnect data
+        buf.writeInt32LE(state_num, 24);
+        buf.writeInt32LE(turn, 28);
+        room_metadata[requestData.RoomID]['match_state'][state_num].copy(buf, 32);
+    
+        return buf;
+    }
+    else{
+        return null;
+    }
 }
 
 function bin2String(array) {
