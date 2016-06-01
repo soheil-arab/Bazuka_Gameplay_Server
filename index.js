@@ -71,7 +71,7 @@ wsServer.on('request', function (request) {
             }
             else if (message.type === 'binary') {
 
-                logger('Received Binary Message of ' + message.binaryData.length);
+                //logger('Received Binary Message of ' + message.binaryData.length);
                 var dataBuffer = message.binaryData;
                 var header = parseHeader(dataBuffer);
                 var room = room_active_users[header.roomID];
@@ -79,14 +79,14 @@ wsServer.on('request', function (request) {
                 if (room_metadata[header.roomID]['state'] == game_state.closed && room_metadata[header.roomID]['state'] == game_state.Finish )
                     return;
                 var message_object = dataBuffer.slice(24);
-                console.log(header);
+                //console.log(header);
                 switch (header.msgType) {
                 /**********
                  match state
                  *********/
                     case 3:
                         var state_num = header.dataRes1;
-                        logger('match_state received :D ' + state_num + ' from ' + srcUID);
+                        logger('from ' + srcUID + ' match state#'+ state_num + ' received!');
 
                         if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
                             room_metadata[header.roomID]['match_state'][state_num] = message_object;
