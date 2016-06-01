@@ -380,20 +380,20 @@ function parseHeader(buf) {
  *  roomID,
  * }
  * room_metadata = {
- *  state, --> wait, play, 
+ *  state, --> wait, play,
  */
 function acceptConnection(request) {
 
     var requestData = {
         UserID: parseInt(request.resourceURL.query.userID, 10),
-        RoomID: parseInt(request.resourceURL.query.roomID, 10),
+        roomID: parseInt(request.resourceURL.query.roomID, 10),
         DeviceID: request.resourceURL.query.userID,
         Ticket: 1//TODO: from query string
     };
 
-    var verification = verify_ticket(requestData.Ticket, requestData.RoomID, requestData.UserID); //TODO: verify ticket with symetric encryption
+    var verification = verify_ticket(requestData.Ticket, requestData.roomID, requestData.UserID); //TODO: verify ticket with symetric encryption
 
-    if (requestData.UserID == undefined || requestData.RoomID == undefined ||
+    if (requestData.UserID == undefined || requestData.roomID == undefined ||
         requestData.DeviceID == undefined || verification == false) {
         logger(chalkError("request not verified!"));
         return;
@@ -405,29 +405,29 @@ function acceptConnection(request) {
     logger('\t' + chalkNotif('connection query is : ') + chalkInMsg(JSON.stringify(request.resourceURL.query)));
 
     connection['userID'] = requestData.UserID;
-    connection['roomID'] = requestData.RoomID;
+    connection['roomID'] = requestData.roomID;
     clients_connection[requestData.UserID] = connection;
 
-    init_room_metadata(requestData.RoomID);
+    init_room_metadata(requestData.roomID);
 
-    if (room_active_users[requestData.RoomID].length < 2 && room_metadata[requestData.RoomID]['state'] == game_state.wait) {
-        room_active_users[requestData.RoomID].push(requestData.UserID);
-        room_metadata[requestData.RoomID]['users'].push(requestData.UserID);
+    if (room_active_users[requestData.roomID].length < 2 && room_metadata[requestData.roomID]['state'] == game_state.wait) {
+        room_active_users[requestData.roomID].push(requestData.UserID);
+        room_metadata[requestData.roomID]['users'].push(requestData.UserID);
     }
 
-    var roomUsers = room_active_users[requestData.RoomID];
-    logger(chalkInMsg('room# '+ requestData.roomID + ' room len ' + roomUsers.length + ' state : ' + room_metadata[requestData.RoomID]['state']));
+    var roomUsers = room_active_users[requestData.roomID];
+    logger(chalkInMsg('room# '+ requestData.roomID + ' room len ' + roomUsers.length + ' state : ' + room_metadata[requestData.roomID]['state']));
 
 
     /**********************
      wait --> play
      ***********************/
-    if (roomUsers.length == 2 && room_metadata[requestData.RoomID]['state'] == game_state.wait) {
-        room_metadata[requestData.RoomID]['state'] = game_state.play;
-        clearTimeout(room_metadata[roomID]['init_timeout_obj']);
+    if (roomUsers.length == 2 && room_metadata[requestData.roomID]['state'] == game_state.wait) {
+        room_metadata[requestData.roomID]['state'] = game_state.play;
+        clearTimeout(room_metadata[requestData.roomID]['init_timeout_obj']);
         var init_buf = makeInitData(requestData);
         for (var i = 0 ; i < 2 ; i++) {
-            var uid = room_metadata[requestData.RoomID]['users'][i];
+            var uid = room_metadata[requestData.roomID]['users'][i];
             if (clients_connection[uid] != undefined) {
                 try {
                     clients_connection[uid].sendBytes(init_buf,
@@ -442,20 +442,20 @@ function acceptConnection(request) {
             }
         }
 
-        room_metadata[requestData.RoomID]['log_file_ws'].write(init_buf);
+        room_metadata[requestData.roomID]['log_file_ws'].write(init_buf);
 
     }
 
     /**********************
      fragilePlay --> play
      ***********************/
-    else if (roomUsers.length <= 2 && room_metadata[requestData.RoomID]['state'] == game_state.fragilePlay) {
+    else if (roomUsers.length <= 2 && room_metadata[requestData.roomID]['state'] == game_state.fragilePlay) {
         //TODO: userid in room meta data users
         if(roomUsers.length == 2){
-            clearTimeout(room_metadata[requestData.RoomID]['fragile_timeout']);
-            room_metadata[requestData.RoomID]['state'] = game_state.play;
+            clearTimeout(room_metadata[requestData.roomID]['fragile_timeout']);
+            room_metadata[requestData.roomID]['state'] = game_state.play;
         }
-        logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.RoomID+"  connected again"));
+        logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.roomID+"  connected again"));
         var recon_buf = makeReconnectData(requestData);
         if (recon_buf != null){
             try {
@@ -475,14 +475,14 @@ function acceptConnection(request) {
     }
 
 
-    else if(room_metadata[requestData.RoomID]['state'] == game_state.closed){
+    else if(room_metadata[requestData.roomID]['state'] == game_state.closed){
 
     }
-    else if(room_metadata[requestData.RoomID]['state'] == game_state.Finish){
+    else if(room_metadata[requestData.roomID]['state'] == game_state.Finish){
 
     }
-    else if(room_metadata[requestData.RoomID]['state'] == game_state.FirstFinish){
-        logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.RoomID+"  connected again --> first finish"));
+    else if(room_metadata[requestData.roomID]['state'] == game_state.FirstFinish){
+        logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.roomID+"  connected again --> first finish"));
         var recon_buf = makeReconnectData(requestData);
         if (recon_buf != null){
             try {
@@ -508,17 +508,17 @@ function acceptConnection(request) {
 
 function makeInitData(requestData) {
     var turn_index = Math.floor(Math.random() * 2);
-    room_metadata[requestData.RoomID]['turn_index'] = turn_index;
-    var turn = room_metadata[requestData.RoomID]['users'][turn_index];
+    room_metadata[requestData.roomID]['turn_index'] = turn_index;
+    var turn = room_metadata[requestData.roomID]['users'][turn_index];
     var deck_order = [0, 1, 2, 3, 4, 5, 6, 7];
-    var userID1 = room_metadata[requestData.RoomID]['users'][0];
-    var userID2 = room_metadata[requestData.RoomID]['users'][1];
+    var userID1 = room_metadata[requestData.roomID]['users'][0];
+    var userID2 = room_metadata[requestData.roomID]['users'][1];
     var shuffled_order = shuffle(deck_order);
     const buf = Buffer.allocUnsafe(68);
     //    const buf = Buffer.allocUnsafe(68+60);
     //header struct
     buf.writeUInt32LE(0, 0);
-    buf.writeUInt32LE(requestData.RoomID, 4);
+    buf.writeUInt32LE(requestData.roomID, 4);
     buf.writeUInt32LE(0, 8);
     buf.writeUInt32LE(44, 12);
     buf.writeUInt32LE(0, 16);
@@ -539,16 +539,16 @@ function makeInitData(requestData) {
 
 function makeReconnectData(requestData) {
 
-    var state_num = room_metadata[requestData.RoomID]['last_state'];
-    var turn_idx = room_metadata[requestData.RoomID]['turn_index'];
-    var turn = room_metadata[requestData.RoomID]['users'][turn_idx];
+    var state_num = room_metadata[requestData.roomID]['last_state'];
+    var turn_idx = room_metadata[requestData.roomID]['turn_index'];
+    var turn = room_metadata[requestData.roomID]['users'][turn_idx];
     var buf_size;
     if(state_num == -1){
         buf_size = 6 * 4 + 2 * 4 ;
         const buf = Buffer.allocUnsafe(buf_size);
         //header struct
         buf.writeUInt32LE(0, 0);
-        buf.writeUInt32LE(requestData.RoomID, 4);
+        buf.writeUInt32LE(requestData.roomID, 4);
         buf.writeUInt32LE(128, 8);
         buf.writeUInt32LE(buf_size - 24, 12);
         buf.writeUInt32LE(0, 16);
@@ -560,12 +560,12 @@ function makeReconnectData(requestData) {
         return buf;
 
     }
-    else if(room_metadata[requestData.RoomID]['match_state'][state_num] != undefined){
-        buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.RoomID]['match_state'][state_num].length;
+    else if(room_metadata[requestData.roomID]['match_state'][state_num] != undefined){
+        buf_size = 6 * 4 + 2 * 4 + room_metadata[requestData.roomID]['match_state'][state_num].length;
         const buf = Buffer.allocUnsafe(buf_size);
         //header struct
         buf.writeInt32LE(0, 0);
-        buf.writeInt32LE(requestData.RoomID, 4);
+        buf.writeInt32LE(requestData.roomID, 4);
         buf.writeInt32LE(128, 8);
         buf.writeInt32LE(buf_size - 24, 12);
         buf.writeInt32LE(0, 16);
@@ -573,7 +573,7 @@ function makeReconnectData(requestData) {
         //reconnect data
         buf.writeInt32LE(state_num, 24);
         buf.writeInt32LE(turn, 28);
-        room_metadata[requestData.RoomID]['match_state'][state_num].copy(buf, 32);
+        room_metadata[requestData.roomID]['match_state'][state_num].copy(buf, 32);
         return buf;
     }
     else{
