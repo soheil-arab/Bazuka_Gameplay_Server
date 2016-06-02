@@ -453,6 +453,8 @@ function acceptConnection(request) {
         //TODO: userid in room meta data users
         if(roomUsers.length == 2){
             clearTimeout(room_metadata[requestData.roomID]['fragile_timeout']);
+            logger('timeout --> ' + room_metadata[requestData.roomID]['fragile_timeout']);
+            logger('fragile timeout removed!');
             room_metadata[requestData.roomID]['state'] = game_state.play;
         }
         logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.roomID+"  connected again"));
@@ -652,7 +654,7 @@ function finishFragilePlay(roomID, userID) {
                 }
                 room_metadata[_roomID]['log_file_ws'].end();
                 delete room_metadata[roomID]['match_state'];
-                fs.writeFile('./log/ForceFinish/' + new Date().toISOString + '_room#' + roomID + '.log', userID);
+                fs.writeFile('./log/ForceFinish/' + new Date().toISOString()+ '_room#' + roomID + '.log', userID);
             }
 
         }
