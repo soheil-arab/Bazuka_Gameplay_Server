@@ -94,7 +94,13 @@ wsServer.on('request', function (request) {
                                         state_num :
                                         room_metadata[header.roomID]['last_state'];
                                 //logger(chalkInMsg("state#" + state_num + "wrote to log & last state is " + room_metadata[header.roomID]['last_state']));
-                                room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                                try{
+                                    room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+
+                                }
+                                catch(e){
+
+                                }
                             }
                             else {
                                 //fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);
@@ -123,7 +129,13 @@ wsServer.on('request', function (request) {
                             if (currentTurn == srcUID) {
                                 room_metadata[header.roomID]['turn_count'] += 1;
                                 room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
-                                room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                                try{
+                                    room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+
+                                }
+                                catch(e){
+
+                                }
                                 for (var i = 0; i < room.length; i++) {
                                     var uid = room[i];
                                     if (uid == srcUID || uid == undefined)
@@ -178,7 +190,11 @@ wsServer.on('request', function (request) {
                                     break;
 
                                 }
-                                room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                                try{
+                                    room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                                }catch(e){
+
+                                }
 
                                 console.log({
                                     roomID: header.roomID,
@@ -259,7 +275,12 @@ wsServer.on('request', function (request) {
                             break;
 
                         default:
-                            room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                            try {
+                                room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
+                            }
+                            catch(e){
+
+                            }
                             for (var i = 0; i < room.length; i++) {
                                 var uid = room[i];
                                 if (uid == srcUID || uid == undefined)
@@ -442,9 +463,14 @@ function acceptConnection(request) {
                     }
                 }
             }
+            try{
+                room_metadata[requestData.roomID]['log_file_ws'].write(init_buf);
 
-            room_metadata[requestData.roomID]['log_file_ws'].write(init_buf);
+            }
+            catch(e)
+            {
 
+            }
         }
 
         /**********************
