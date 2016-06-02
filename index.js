@@ -449,8 +449,9 @@ function acceptConnection(request) {
     /**********************
      fragilePlay --> play
      ***********************/
-    else if (roomUsers.length <= 2 && room_metadata[requestData.roomID]['state'] == game_state.fragilePlay) {
+    else if (room_metadata[requestData.roomID]['state'] == game_state.fragilePlay) {
         //TODO: userid in room meta data users
+        logger('fragile room length : ' + roomUsers.length);
         if(roomUsers.length == 2){
             clearTimeout(room_metadata[requestData.roomID]['fragile_timeout']);
             logger('timeout --> ' + room_metadata[requestData.roomID]['fragile_timeout']);
