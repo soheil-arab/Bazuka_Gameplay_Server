@@ -85,7 +85,7 @@ wsServer.on('request', function (request) {
                      *********/
                         case 3:
                             var state_num = header.dataRes1;
-                            logger('from ' + srcUID + ' match state#' + state_num + ' received!');
+                            //logger('from ' + srcUID + ' match state#' + state_num + ' received!');
 
                             if (room_metadata[header.roomID]['match_state'][state_num] == undefined) {
                                 room_metadata[header.roomID]['match_state'][state_num] = message_object;
@@ -93,13 +93,13 @@ wsServer.on('request', function (request) {
                                     room_metadata[header.roomID]['last_state'] < state_num ?
                                         state_num :
                                         room_metadata[header.roomID]['last_state'];
-                                logger(chalkInMsg("state#" + state_num + "wrote to log & last state is " + room_metadata[header.roomID]['last_state']));
+                                //logger(chalkInMsg("state#" + state_num + "wrote to log & last state is " + room_metadata[header.roomID]['last_state']));
                                 room_metadata[header.roomID]['log_file_ws'].write(dataBuffer);
                             }
                             else {
                                 //fs.writeFile("state_"+srcUID+"_"+state_num+".bin",message_object);
-                                logger(chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
-                                    room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
+                                //logger(chalkInMsg('match state mismatch check --> ' + header.roomID + ' ' +
+                                //    room_metadata[header.roomID]['match_state'][state_num].compare(message_object)));
 
                                 if (room_metadata[header.roomID]['match_state'][state_num].compare(message_object) != 0) {
                                     fs.writeFile(room_metadata[header.roomID]['log_file_err'] + "_state#" + state_num + "_1.log", room_metadata[header.roomID]['match_state'][state_num], function (err) {
@@ -118,8 +118,8 @@ wsServer.on('request', function (request) {
                             //if valid -->
                             var turn_idx = room_metadata[header.roomID]['turn_index'];
                             var currentTurn = room_metadata[header.roomID]['users'][turn_idx];
-                            logger('change turn struct data from ' + chalkInMsg(srcUID));
-                            logger('current turn : ' + currentTurn.toString());
+                            //logger('change turn struct data from ' + chalkInMsg(srcUID));
+                            //logger('current turn : ' + currentTurn.toString());
                             if (currentTurn == srcUID) {
                                 room_metadata[header.roomID]['turn_count'] += 1;
                                 room_metadata[header.roomID]['turn_index'] = 1 - room_metadata[header.roomID]['turn_index'];
@@ -134,7 +134,7 @@ wsServer.on('request', function (request) {
                                                 logger('change turn send err ' + chalkError(err));
                                             }
                                             else {
-                                                logger(chalkNotif('change turn sent to opponent'));
+                                                //logger(chalkNotif('change turn sent to opponent'));
                                             }
                                         });
                                     } catch (e) {
@@ -287,7 +287,7 @@ wsServer.on('request', function (request) {
                 var room = room_active_users[roomID];
                 var userID = connection['userID'];
                 if (room_metadata[roomID] == undefined || room == undefined) {
-                    logger(chalkError('close connection room is undefined'));
+                    logger(chalkError('closed connection room is undefined'));
                     return;
                 }
                 var uid, j;
@@ -455,8 +455,6 @@ function acceptConnection(request) {
             logger('fragile room length : ' + roomUsers.length);
             if (roomUsers.length == 1) {
                 clearTimeout(room_metadata[requestData.roomID]['fragile_timeout']);
-                logger('timeout --> ' + room_metadata[requestData.roomID]['fragile_timeout']);
-                logger('fragile timeout removed!');
                 room_active_users[requestData.roomID].push(requestData.UserID);
                 room_metadata[requestData.roomID]['state'] = game_state.play;
             }

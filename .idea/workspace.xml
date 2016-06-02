@@ -27,15 +27,9 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.45048967">
-              <caret line="323" column="73" selection-start-line="323" selection-start-column="73" selection-end-line="323" selection-end-column="73" />
-              <folding>
-                <element signature="n#!!block;n#acceptConnection#0" expanded="false" />
-                <element signature="e#22938#23731#0" expanded="false" />
-                <element signature="n#!!block;n#makeInitData#0" expanded="false" />
-                <element signature="n#!!block;n#makeReconnectData#0" expanded="false" />
-                <element signature="n#!!block;n#finishFragilePlay#0" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="-0.2027027">
+              <caret line="302" column="17" selection-start-line="302" selection-start-column="16" selection-end-line="302" selection-end-column="17" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -185,7 +179,9 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <option name="time" value="2" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
@@ -193,13 +189,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="n#!!block;n#acceptConnection#0" expanded="false" />
-            <element signature="e#22938#23731#0" expanded="false" />
-            <element signature="n#!!block;n#makeInitData#0" expanded="false" />
-            <element signature="n#!!block;n#makeReconnectData#0" expanded="false" />
-            <element signature="n#!!block;n#finishFragilePlay#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -207,13 +197,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="n#!!block;n#acceptConnection#0" expanded="false" />
-            <element signature="e#22938#23731#0" expanded="false" />
-            <element signature="n#!!block;n#makeInitData#0" expanded="false" />
-            <element signature="n#!!block;n#makeReconnectData#0" expanded="false" />
-            <element signature="n#!!block;n#finishFragilePlay#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -221,27 +205,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="n#!!block;n#acceptConnection#0" expanded="false" />
-            <element signature="e#22938#23731#0" expanded="false" />
-            <element signature="n#!!block;n#makeInitData#0" expanded="false" />
-            <element signature="n#!!block;n#makeReconnectData#0" expanded="false" />
-            <element signature="n#!!block;n#finishFragilePlay#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.45048967">
-          <caret line="323" column="73" selection-start-line="323" selection-start-column="73" selection-end-line="323" selection-end-column="73" />
-          <folding>
-            <element signature="n#!!block;n#acceptConnection#0" expanded="false" />
-            <element signature="e#22938#23731#0" expanded="false" />
-            <element signature="n#!!block;n#makeInitData#0" expanded="false" />
-            <element signature="n#!!block;n#makeReconnectData#0" expanded="false" />
-            <element signature="n#!!block;n#finishFragilePlay#0" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="-0.2027027">
+          <caret line="302" column="17" selection-start-line="302" selection-start-column="16" selection-end-line="302" selection-end-column="17" />
+          <folding />
         </state>
       </provider>
     </entry>
