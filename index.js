@@ -452,10 +452,11 @@ function acceptConnection(request) {
     else if (room_metadata[requestData.roomID]['state'] == game_state.fragilePlay) {
         //TODO: userid in room meta data users
         logger('fragile room length : ' + roomUsers.length);
-        if(roomUsers.length == 2){
+        if(roomUsers.length == 1){
             clearTimeout(room_metadata[requestData.roomID]['fragile_timeout']);
             logger('timeout --> ' + room_metadata[requestData.roomID]['fragile_timeout']);
             logger('fragile timeout removed!');
+            room_active_users[requestData.roomID].push(requestData.UserID);
             room_metadata[requestData.roomID]['state'] = game_state.play;
         }
         logger(chalkInMsg("user#"+requestData.UserID+ ' room#' +requestData.roomID+"  connected again"));
